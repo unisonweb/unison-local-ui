@@ -1,7 +1,16 @@
 Unison Local UI
 ===============
 
-[![CI](https://github.com/unisonweb/codebase-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/unisonweb/codebase-ui/actions/workflows/ci.yml)
+[![CI](https://github.com/unisonweb/unison-local-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/unisonweb/unison-local-ui/actions/workflows/ci.yml)
+
+Dependencies
+------------
+
+This depends on the [ui-core package](https://github.com/unisonweb/ui-core) via
+[elm-git-install](https://github.com/robinheghan/elm-git-install). That package
+includes both the Unison design system, and a core set of components for
+working with and rendering Unison definitions and
+namespaces.
 
 Running Development Server
 --------------------------
@@ -13,7 +22,7 @@ Running Development Server
    (`ucm` also outputs a UI URL, but this isn't used when developing for the
    UI/running the UI from this repository).
 
-2. Make sure the latest dependencies are installed with by running `npm install`
+2. Make sure the latest dependencies are installed with by running `npm install` followed by `npm run ui-core:install`.
 
 3. Start the dev server with: `API_URL="<API URL FROM UCM>" npm start`
 
