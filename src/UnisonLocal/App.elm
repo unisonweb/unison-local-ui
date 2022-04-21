@@ -23,7 +23,7 @@ import RemoteData
 import UI
 import UI.AppHeader as AppHeader
 import UI.Button as Button
-import UI.Click as Click exposing (Click(..))
+import UI.Click as Click exposing (Click)
 import UI.Icon as Icon
 import UI.KeyboardShortcut as KeyboardShortcut
 import UI.KeyboardShortcut.Key as Key exposing (Key(..))
@@ -537,12 +537,12 @@ viewMainSidebarCollapseButton model =
 
 subMenu : List ( String, Click Msg )
 subMenu =
-    [ ( "Unison website", ExternalHref "https://unisonweb.org" )
-    , ( "Docs", ExternalHref "https://unisonweb.org/docs" )
-    , ( "Language Reference", ExternalHref "https://unisonweb.org/docs/language-reference" )
-    , ( "Community", ExternalHref "https://unisonweb.org/community" )
-    , ( "Report a bug", OnClick (ShowModal ReportBugModal) )
-    , ( "Unison Share", ExternalHref "https://share.unison-lang.org" )
+    [ ( "Unison website", Click.externalHref "https://unisonweb.org" )
+    , ( "Docs", Click.externalHref "https://unisonweb.org/docs" )
+    , ( "Language Reference", Click.externalHref "https://unisonweb.org/docs/language-reference" )
+    , ( "Community", Click.externalHref "https://unisonweb.org/community" )
+    , ( "Report a bug", Click.onClick (ShowModal ReportBugModal) )
+    , ( "Unison Share", Click.externalHref "https://share.unison-lang.org" )
     ]
 
 
@@ -662,14 +662,6 @@ viewHelpModal os keyboardShortcut =
         |> Modal.view
 
 
-githubLinkButton : String -> Html msg
-githubLinkButton repo =
-    Button.linkIconThenLabel ("https://github.com/" ++ repo) Icon.github repo
-        |> Button.small
-        |> Button.contained
-        |> Button.view
-
-
 viewPublishModal : Html Msg
 viewPublishModal =
     let
@@ -679,7 +671,7 @@ viewPublishModal =
                     []
                     [ p [ class "main" ]
                         [ text "With your Unison codebase on GitHub, open a Pull Request against "
-                        , githubLinkButton "unisonweb/share"
+                        , Button.github "unisonweb/share" |> Button.view
                         , text " to list (or unlist) your project on Unison Share."
                         ]
                     , a [ class "help", href "https://www.unisonweb.org/docs/codebase-organization/#day-to-day-development-creating-and-merging-pull-requests", rel "noopener", target "_blank" ] [ text "How do I get my code on GitHub?" ]
@@ -705,13 +697,13 @@ viewReportBugModal =
                     , section [ class "actions" ]
                         [ p [] [ text "Visit our GitHub repositories to report bugs and provide feedback" ]
                         , div [ class "action" ]
-                            [ githubLinkButton "unisonweb/codebase-ui"
+                            [ Button.github "unisonweb/unison-local-ui" |> Button.view
                             , text "for reports on"
                             , strong [] [ text "Unison Local" ]
                             , span [ class "subtle" ] [ text "(this UI)" ]
                             ]
                         , div [ class "action" ]
-                            [ githubLinkButton "unisonweb/unison"
+                            [ Button.github "unisonweb/unison" |> Button.view
                             , text "for reports on the"
                             , strong [] [ text "Unison Language" ]
                             , span [ class "subtle" ] [ text "(UCM)" ]
