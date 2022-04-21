@@ -1,0 +1,31 @@
+name: "pre-release"
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    branches: [ main ]
+    types: 
+      - completed
+
+jobs:
+  pre-release:
+    name: "Pre Release"
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm ci
+      - run: npm run ui-core:install
+      - run: npm run build
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "Pre-release Build"
+          files: dist/*.zip
