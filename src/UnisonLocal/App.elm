@@ -29,6 +29,7 @@ import UI.KeyboardShortcut as KeyboardShortcut
 import UI.KeyboardShortcut.Key as Key exposing (Key(..))
 import UI.KeyboardShortcut.KeyboardEvent as KeyboardEvent exposing (KeyboardEvent)
 import UI.Modal as Modal
+import UI.PageContent as PageContent
 import UI.PageLayout as PageLayout
 import UI.Sidebar as Sidebar
 import UI.Tooltip as Tooltip
@@ -484,8 +485,9 @@ appHeader : AppHeader.AppHeader Msg
 appHeader =
     { menuToggle = Just ToggleSidebar
     , appTitle = appTitle (Click.Href "/")
-    , banner = Nothing
-    , rightButton = Just (Button.button (ShowModal PublishModal) "Publish on Unison Share" |> Button.share)
+    , navigation = Nothing
+    , leftSide = []
+    , rightSide = [ Button.button (ShowModal PublishModal) "Publish on Unison Share" |> Button.share |> Button.view ]
     }
 
 
@@ -743,10 +745,10 @@ viewAppLoading =
     div [ id "app" ]
         [ AppHeader.view (AppHeader.appHeader (appTitle Click.Disabled))
         , PageLayout.view
-            (PageLayout.SidebarLayout
+            (PageLayout.SidebarLeftContentLayout
                 { sidebar = []
                 , sidebarToggled = False
-                , content = PageLayout.PageContent []
+                , content = PageContent.empty
                 }
             )
         ]
@@ -757,11 +759,11 @@ viewAppError error =
     div [ id "app" ]
         [ AppHeader.view (AppHeader.appHeader (appTitle Click.Disabled))
         , PageLayout.view
-            (PageLayout.SidebarLayout
+            (PageLayout.SidebarLeftContentLayout
                 { sidebar = []
                 , sidebarToggled = False
                 , content =
-                    PageLayout.PageContent
+                    PageContent.oneColumn
                         [ div [ class "app-error" ]
                             [ Icon.view Icon.warn
                             , p [ title (Util.httpErrorToString error) ]
@@ -789,10 +791,10 @@ view model =
                     Html.map WorkspaceMsg (Workspace.view model.workspace)
 
         page =
-            PageLayout.SidebarLayout
+            PageLayout.SidebarEdgeToEdgeLayout
                 { sidebar = viewMainSidebar model
                 , sidebarToggled = model.sidebarToggled
-                , content = PageLayout.PageContent [ pageContent ]
+                , content = PageContent.oneColumn [ pageContent ]
                 }
     in
     { title = "Unison Local"
