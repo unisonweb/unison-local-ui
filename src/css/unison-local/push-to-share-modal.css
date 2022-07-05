@@ -1,0 +1,36 @@
+#push-to-share-modal {
+  width: 38rem;
+  font-size: var(--font-size-medium);
+}
+
+#push-to-share-modal .inline-code {
+  background: var(--u-color_container_subdued);
+  padding: 0 0.25rem;
+  border-radius: var(--border-radius-base);
+}
+
+#push-to-share-modal .example-namespace-structure {
+  display: flex;
+  margin: 1.5rem 0 1.5rem 0;
+  padding-left: 1.5rem;
+}
+
+#push-to-share-modal .help {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+  margin-top: 1rem;
+  font-size: var(--font-size-medium);
+  color: var(--u-color_text);
+}
+
+#push-to-share-modal .help .icon {
+  color: var(--u-color_icon_subdued);
+  margin-top: 2px;
+}
+
+#push-to-share-modal .actions {
+  padding-top: 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+}

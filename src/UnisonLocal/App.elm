@@ -13,7 +13,7 @@ import Code.Perspective as Perspective exposing (Perspective(..))
 import Code.Workspace as Workspace
 import Code.Workspace.WorkspaceItems as WorkspaceItems
 import Html exposing (Html, div, h1, h2, h3, p, section, span, strong, text)
-import Html.Attributes exposing (class, classList, href, id, title)
+import Html.Attributes exposing (class, classList, id, title)
 import Http
 import Lib.HttpApi as HttpApi
 import Lib.OperatingSystem exposing (OperatingSystem(..))
@@ -34,6 +34,7 @@ import UI.PageLayout as PageLayout
 import UI.Sidebar as Sidebar
 import UnisonLocal.Api as LocalApi
 import UnisonLocal.Env as Env exposing (Env)
+import UnisonLocal.Link as Link
 import UnisonLocal.PerspectiveLanding as PerspectiveLanding
 import UnisonLocal.Route as Route exposing (Route)
 import Url exposing (Url)
@@ -644,7 +645,8 @@ viewPushToShareModal =
                 (section
                     []
                     [ p []
-                        [ text "Unison Share hosts your code in a public namespace under your handle, an example namespace structure of a JSON library might look like this:"
+                        [ Link.view "Unison Share" Link.share
+                        , text " hosts your code in a public namespace under your handle, an example namespace structure of a JSON library might look like this:"
                         ]
                     , div [ class "example-namespace-structure" ]
                         [ UI.inlineCode [] (text "<unison-share-handle>.public.jsonLibrary")
