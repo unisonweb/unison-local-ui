@@ -1,5 +1,5 @@
 module UnisonLocal.Api exposing
-    ( codebaseApiEndpointToEndpointUrl
+    ( codebaseApiEndpointToEndpoint
     , codebaseHash
     , namespace
     )
@@ -11,34 +11,41 @@ import Code.Hash as Hash exposing (Hash)
 import Code.Namespace.NamespaceRef as NamespaceRef
 import Code.Perspective as Perspective exposing (Perspective(..))
 import Code.Syntax as Syntax
-import Lib.HttpApi exposing (EndpointUrl(..))
+import Lib.HttpApi exposing (Endpoint(..))
+import Maybe.Extra as MaybeE
 import Regex
 import Url.Builder exposing (QueryParameter, int, string)
 
 
-codebaseHash : EndpointUrl
+codebaseHash : Endpoint
 codebaseHash =
-    EndpointUrl [ "list" ] [ string "namespace" "." ]
+    GET { path = [ "list" ], queryParams = [ string "namespace" "." ] }
 
 
-namespace : Perspective -> FQN -> EndpointUrl
+namespace : Perspective -> FQN -> Endpoint
 namespace perspective fqn =
     let
         queryParams =
-            [ rootBranch (Perspective.rootHash perspective) ]
+            [ toRootBranch (Perspective.rootPerspective perspective) ]
     in
-    EndpointUrl [ "namespaces", FQN.toString fqn ] queryParams
+    GET
+        { path = [ "namespaces", FQN.toString fqn ]
+        , queryParams = MaybeE.values queryParams
+        }
 
 
-codebaseApiEndpointToEndpointUrl : CodebaseApi.CodebaseEndpoint -> EndpointUrl
-codebaseApiEndpointToEndpointUrl cbEndpoint =
+codebaseApiEndpointToEndpoint : CodebaseApi.CodebaseEndpoint -> Endpoint
+codebaseApiEndpointToEndpoint cbEndpoint =
     case cbEndpoint of
         CodebaseApi.Find { perspective, withinFqn, limit, sourceWidth, query } ->
             let
                 params =
                     case withinFqn of
                         Just fqn ->
-                            [ rootBranch (Perspective.rootHash perspective), relativeTo fqn ]
+                            [ toRootBranch (Perspective.rootPerspective perspective)
+                            , Just (relativeTo fqn)
+                            ]
+                                |> MaybeE.values
 
                         Nothing ->
                             perspectiveToQueryParams perspective
@@ -48,21 +55,25 @@ codebaseApiEndpointToEndpointUrl cbEndpoint =
                         Syntax.Width w ->
                             w
             in
-            EndpointUrl
-                [ "find" ]
-                ([ int "limit" limit
-                 , int "renderWidth" width
-                 , string "query" query
-                 ]
-                    ++ params
-                )
+            GET
+                { path = [ "find" ]
+                , queryParams =
+                    [ int "limit" limit
+                    , int "renderWidth" width
+                    , string "query" query
+                    ]
+                        ++ params
+                }
 
         CodebaseApi.Browse { perspective, ref } ->
             let
                 namespace_ =
                     ref |> Maybe.map NamespaceRef.toString |> Maybe.withDefault "."
             in
-            EndpointUrl [ "list" ] (string "namespace" namespace_ :: perspectiveToQueryParams perspective)
+            GET
+                { path = [ "list" ]
+                , queryParams = string "namespace" namespace_ :: perspectiveToQueryParams perspective
+                }
 
         CodebaseApi.Definition { perspective, ref } ->
             let
@@ -75,7 +86,7 @@ codebaseApiEndpointToEndpointUrl cbEndpoint =
             [ Reference.toApiUrlString ref ]
                 |> List.map stripConstructorPositionFromHash
                 |> List.map (string "names")
-                |> (\names -> EndpointUrl [ "getDefinition" ] (names ++ perspectiveToQueryParams perspective))
+                |> (\names -> GET { path = [ "getDefinition" ], queryParams = names ++ perspectiveToQueryParams perspective })
 
 
 
@@ -85,11 +96,21 @@ codebaseApiEndpointToEndpointUrl cbEndpoint =
 perspectiveToQueryParams : Perspective -> List QueryParameter
 perspectiveToQueryParams perspective =
     case perspective of
-        Root h ->
-            [ rootBranch h ]
+        Root p ->
+            MaybeE.values [ toRootBranch p ]
 
         Namespace d ->
-            [ rootBranch d.rootHash, relativeTo d.fqn ]
+            [ toRootBranch d.root, Just (relativeTo d.fqn) ] |> MaybeE.values
+
+
+toRootBranch : Perspective.RootPerspective -> Maybe QueryParameter
+toRootBranch rootPerspective =
+    case rootPerspective of
+        Perspective.Relative ->
+            Nothing
+
+        Perspective.Absolute h ->
+            Just (rootBranch h)
 
 
 rootBranch : Hash -> QueryParameter

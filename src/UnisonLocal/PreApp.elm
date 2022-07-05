@@ -2,11 +2,9 @@ module UnisonLocal.PreApp exposing (..)
 
 import Browser
 import Browser.Navigation as Nav
-import Code.Perspective as Perspective exposing (Perspective, PerspectiveParams)
+import Code.Perspective as Perspective exposing (PerspectiveParams)
 import Html
 import Http
-import Lib.HttpApi as HttpApi exposing (ApiBasePath(..), ApiRequest)
-import UnisonLocal.Api as LocalApi
 import UnisonLocal.App as App
 import UnisonLocal.Env as Env exposing (Flags)
 import UnisonLocal.Route as Route exposing (Route)
@@ -49,52 +47,19 @@ init flags url navKey =
                     App.init env preEnv.route
             in
             ( Initialized app, Cmd.map AppMsg cmd )
-
-        fetchPerspective_ =
-            ( Initializing preEnv, HttpApi.perform (ApiBasePath flags.apiBasePath) (fetchPerspective preEnv) )
     in
-    -- If we have a codebase hash we can construct a full perspective,
-    -- otherwise we have to fetch the hash before being able to start up the
-    -- app
     preEnv.perspectiveParams
         |> Perspective.fromParams
-        |> Maybe.map perspectiveToAppInit
-        |> Maybe.withDefault fetchPerspective_
-
-
-fetchPerspective : PreEnv -> ApiRequest Perspective Msg
-fetchPerspective preEnv =
-    LocalApi.codebaseHash |> HttpApi.toRequest (Perspective.decode preEnv.perspectiveParams) (FetchPerspectiveFinished preEnv)
+        |> perspectiveToAppInit
 
 
 type Msg
-    = FetchPerspectiveFinished PreEnv (Result Http.Error Perspective)
-    | AppMsg App.Msg
+    = AppMsg App.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        FetchPerspectiveFinished preEnv result ->
-            case result of
-                Ok perspective ->
-                    let
-                        env =
-                            Env.init preEnv.flags preEnv.navKey perspective
-
-                        newRoute =
-                            perspective
-                                |> Perspective.toParams
-                                |> Route.updatePerspectiveParams preEnv.route
-
-                        ( app, cmd ) =
-                            App.init env newRoute
-                    in
-                    ( Initialized app, Cmd.map AppMsg cmd )
-
-                Err err ->
-                    ( InitializationError preEnv err, Cmd.none )
-
         AppMsg appMsg ->
             case model of
                 Initialized a ->

@@ -19,21 +19,18 @@ console.log(`
 
 const basePath = new URL(document.baseURI).pathname;
 
-let apiBasePath;
+let apiUrl;
 
 if (basePath === "/") {
-  apiBasePath = ["api"];
+  apiUrl = "api";
 } else {
-  apiBasePath = basePath
-    .replace("ui", "api")
-    .split("/")
-    .filter((p) => p !== "");
+  apiUrl = basePath.replace("ui", "api");
 }
 
 const flags = {
   operatingSystem: detectOs(window.navigator),
   basePath,
-  apiBasePath,
+  apiUrl,
 };
 
 preventDefaultGlobalKeyboardEvents();

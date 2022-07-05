@@ -19,7 +19,7 @@ import Code.Definition.Reference exposing (Reference(..))
 import Code.FullyQualifiedName as FQN
 import Code.Hash as Hash
 import Code.HashQualified exposing (HashQualified(..))
-import Code.Perspective exposing (PerspectiveParams(..), RootPerspectiveParam(..))
+import Code.Perspective as Perspective exposing (PerspectiveParams(..))
 import Code.UrlParsers as UP exposing (b, reference, slash)
 import List.Nonempty as NEL
 import Parser exposing ((|.), (|=), Parser, end, oneOf, succeed)
@@ -138,7 +138,7 @@ fromUrl basePath url =
                 "/" ++ path
 
         parse url_ =
-            Result.withDefault (Perspective (ByRoot Relative)) (Parser.run toRoute url_)
+            Result.withDefault (Perspective (ByRoot Perspective.Relative)) (Parser.run toRoute url_)
     in
     url
         |> .path
@@ -190,13 +190,13 @@ toUrlString route =
         -- used to mark the end of a namespace FQN
         perspectiveParamsToPath pp includeNamespacesSuffix =
             case pp of
-                ByRoot Relative ->
+                ByRoot Perspective.Relative ->
                     [ "latest" ]
 
-                ByRoot (Absolute hash) ->
+                ByRoot (Perspective.Absolute hash) ->
                     [ Hash.toUrlString hash ]
 
-                ByNamespace Relative fqn ->
+                ByNamespace Perspective.Relative fqn ->
                     if includeNamespacesSuffix then
                         "latest" :: "namespaces" :: NEL.toList (FQN.segments fqn) ++ [ namespaceSuffix ]
 
@@ -208,7 +208,7 @@ toUrlString route =
                 -- history, meaning that everytime we deploy Unison Share, the
                 -- previous versions of the codebase are lost.
                 -- It's fully intended for this feature to be brought back
-                ByNamespace (Absolute hash) fqn ->
+                ByNamespace (Perspective.Absolute hash) fqn ->
                     if includeNamespacesSuffix then
                         Hash.toUrlString hash :: "namespaces" :: NEL.toList (FQN.segments fqn) ++ [ namespaceSuffix ]
 
@@ -260,7 +260,7 @@ navigateToCurrentPerspective navKey oldRoute =
 
 navigateToLatestCodebase : Nav.Key -> Cmd msg
 navigateToLatestCodebase navKey =
-    navigateToPerspective navKey (ByRoot Relative)
+    navigateToPerspective navKey (ByRoot Perspective.Relative)
 
 
 navigateToDefinition : Nav.Key -> Route -> Reference -> Cmd msg

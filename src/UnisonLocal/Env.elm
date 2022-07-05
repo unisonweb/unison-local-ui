@@ -4,14 +4,14 @@ import Browser.Navigation as Nav
 import Code.CodebaseApi as CodebaseApi
 import Code.Config
 import Code.Perspective exposing (Perspective)
-import Lib.HttpApi exposing (ApiBasePath(..))
+import Lib.HttpApi as HttpApi exposing (HttpApi)
 import Lib.OperatingSystem as OS exposing (OperatingSystem)
 
 
 type alias Env =
     { operatingSystem : OperatingSystem
     , basePath : String
-    , apiBasePath : ApiBasePath
+    , api : HttpApi
     , navKey : Nav.Key
     , perspective : Perspective
     }
@@ -20,7 +20,7 @@ type alias Env =
 type alias Flags =
     { operatingSystem : String
     , basePath : String
-    , apiBasePath : List String
+    , apiUrl : String
     }
 
 
@@ -28,16 +28,16 @@ init : Flags -> Nav.Key -> Perspective -> Env
 init flags navKey perspective =
     { operatingSystem = OS.fromString flags.operatingSystem
     , basePath = flags.basePath
-    , apiBasePath = ApiBasePath flags.apiBasePath
+    , api = HttpApi.httpApi flags.apiUrl Nothing
     , navKey = navKey
     , perspective = perspective
     }
 
 
-toCodeConfig : CodebaseApi.ToApiEndpointUrl -> Env -> Code.Config.Config
-toCodeConfig toApiEndpointUrl env =
+toCodeConfig : CodebaseApi.ToApiEndpoint -> Env -> Code.Config.Config
+toCodeConfig toApiEndpoint env =
     { operatingSystem = env.operatingSystem
     , perspective = env.perspective
-    , toApiEndpointUrl = toApiEndpointUrl
-    , apiBasePath = env.apiBasePath
+    , toApiEndpoint = toApiEndpoint
+    , api = env.api
     }

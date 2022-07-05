@@ -12,9 +12,8 @@ import Code.Namespace as Namespace exposing (NamespaceDetails)
 import Code.Perspective as Perspective exposing (Perspective(..))
 import Code.Workspace as Workspace
 import Code.Workspace.WorkspaceItems as WorkspaceItems
-import Html exposing (Html, a, div, h1, h2, h3, nav, p, section, span, strong, text)
+import Html exposing (Html, a, div, h1, h2, h3, p, section, span, strong, text)
 import Html.Attributes exposing (class, classList, href, id, rel, target, title)
-import Html.Events exposing (onClick)
 import Http
 import Lib.HttpApi as HttpApi
 import Lib.OperatingSystem exposing (OperatingSystem(..))
@@ -32,7 +31,6 @@ import UI.Modal as Modal
 import UI.PageContent as PageContent
 import UI.PageLayout as PageLayout
 import UI.Sidebar as Sidebar
-import UI.Tooltip as Tooltip
 import UnisonLocal.Api as LocalApi
 import UnisonLocal.Env as Env exposing (Env)
 import UnisonLocal.PerspectiveLanding as PerspectiveLanding
@@ -71,7 +69,7 @@ init : Env -> Route -> ( Model, Cmd Msg )
 init env route =
     let
         codebaseConfig =
-            Env.toCodeConfig LocalApi.codebaseApiEndpointToEndpointUrl env
+            Env.toCodeConfig LocalApi.codebaseApiEndpointToEndpoint env
 
         ( workspace, workspaceCmd ) =
             case route of
@@ -87,7 +85,7 @@ init env route =
         fetchNamespaceDetailsCmd =
             env.perspective
                 |> fetchNamespaceDetails
-                |> Maybe.map (HttpApi.perform env.apiBasePath)
+                |> Maybe.map (HttpApi.perform env.api)
                 |> Maybe.withDefault Cmd.none
 
         model =
@@ -122,6 +120,7 @@ type Msg
     | Keydown KeyboardEvent
     | OpenDefinition Reference
     | ShowModal Modal
+    | ShowFinder
     | CloseModal
     | ToggleSidebar
       -- sub msgs
@@ -136,7 +135,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg ({ env } as model) =
     let
         codebaseConfig =
-            Env.toCodeConfig LocalApi.codebaseApiEndpointToEndpointUrl env
+            Env.toCodeConfig LocalApi.codebaseApiEndpointToEndpoint env
     in
     case msg of
         LinkClicked urlRequest ->
@@ -158,13 +157,17 @@ update msg ({ env } as model) =
                     { model | route = route }
 
                 newEnv params =
-                    { env | perspective = Perspective.nextFromParams env.perspective params }
+                    if not (Perspective.equals (Perspective.fromParams params) env.perspective) then
+                        { env | perspective = Perspective.fromParams params }
+
+                    else
+                        env
             in
             case route of
                 Route.Definition params ref ->
                     let
                         codebaseConfig_ =
-                            Env.toCodeConfig LocalApi.codebaseApiEndpointToEndpointUrl (newEnv params)
+                            Env.toCodeConfig LocalApi.codebaseApiEndpointToEndpoint (newEnv params)
 
                         ( workspace, cmd ) =
                             Workspace.open codebaseConfig_ model.workspace ref
@@ -210,6 +213,9 @@ update msg ({ env } as model) =
 
         ShowModal modal ->
             ( { model | modal = modal }, Cmd.none )
+
+        ShowFinder ->
+            showFinder model Nothing
 
         CloseModal ->
             ( { model | modal = NoModal }, Cmd.none )
@@ -340,7 +346,7 @@ fetchPerspectiveAndCodebaseTree : Perspective -> Model -> ( Model, Cmd Msg )
 fetchPerspectiveAndCodebaseTree oldPerspective ({ env } as model) =
     let
         codebaseConfig =
-            Env.toCodeConfig LocalApi.codebaseApiEndpointToEndpointUrl model.env
+            Env.toCodeConfig LocalApi.codebaseApiEndpointToEndpoint model.env
 
         ( codebaseTree, codebaseTreeCmd ) =
             CodebaseTree.init codebaseConfig
@@ -348,7 +354,7 @@ fetchPerspectiveAndCodebaseTree oldPerspective ({ env } as model) =
         fetchNamespaceDetailsCmd =
             env.perspective
                 |> fetchNamespaceDetails
-                |> Maybe.map (HttpApi.perform env.apiBasePath)
+                |> Maybe.map (HttpApi.perform env.api)
                 |> Maybe.withDefault Cmd.none
     in
     if Perspective.needsFetching env.perspective then
@@ -427,7 +433,7 @@ showFinder :
 showFinder model withinNamespace =
     let
         codebaseConfig =
-            Env.toCodeConfig LocalApi.codebaseApiEndpointToEndpointUrl model.env
+            Env.toCodeConfig LocalApi.codebaseApiEndpointToEndpoint model.env
 
         options =
             SearchOptions.init model.env.perspective withinNamespace
@@ -491,11 +497,11 @@ appHeader =
     }
 
 
-viewSidebarHeader : Env -> Html Msg
+viewSidebarHeader : Env -> Maybe (Sidebar.SidebarHeader Msg)
 viewSidebarHeader env =
     case env.perspective of
         Root _ ->
-            UI.nothing
+            Nothing
 
         Namespace { fqn, details } ->
             let
@@ -511,91 +517,45 @@ viewSidebarHeader env =
                         |> RemoteData.map (Namespace.hash >> Hashvatar.view)
                         |> RemoteData.withDefault Hashvatar.empty
             in
-            Sidebar.header
-                [ Sidebar.headerItem
-                    [ classList [ ( "is-overflowing", isOverflowing ) ] ]
-                    [ hashvatar
-                    , h2 [ class "namespace" ] [ FQN.view fqn ]
-                    ]
-                , UI.divider
-                ]
-
-
-viewMainSidebarCollapseButton : Model -> Html Msg
-viewMainSidebarCollapseButton model =
-    div
-        [ class "collapse-sidebar-button" ]
-        [ Button.icon ToggleSidebar
-            (if model.sidebarToggled then
-                Icon.chevronRight
-
-             else
-                Icon.chevronLeft
-            )
-            |> Button.small
-            |> Button.view
-        ]
-
-
-subMenu : List ( String, Click Msg )
-subMenu =
-    [ ( "Unison website", Click.externalHref "https://unisonweb.org" )
-    , ( "Docs", Click.externalHref "https://unisonweb.org/docs" )
-    , ( "Language Reference", Click.externalHref "https://unisonweb.org/docs/language-reference" )
-    , ( "Community", Click.externalHref "https://unisonweb.org/community" )
-    , ( "Report a bug", Click.onClick (ShowModal ReportBugModal) )
-    , ( "Unison Share", Click.externalHref "https://share.unison-lang.org" )
-    ]
-
-
-unisonSubmenu : Html Msg
-unisonSubmenu =
-    Tooltip.tooltip
-        (Icon.unisonMark
-            |> Icon.withClass "sidebar-unison-submenu"
-            |> Icon.view
-        )
-        (Tooltip.textMenu subMenu)
-        |> Tooltip.withPosition Tooltip.RightOf
-        |> Tooltip.withArrow Tooltip.End
-        |> Tooltip.view
-
-
-viewMainSidebar : Model -> List (Html Msg)
-viewMainSidebar model =
-    [ viewMainSidebarCollapseButton model
-    , div [ class "expanded-content" ]
-        [ viewSidebarHeader model.env
-        , div [ class "sidebar-scroll-area" ]
-            [ Sidebar.section
-                "Namespaces and Definitions"
-                [ Html.map CodebaseTreeMsg (CodebaseTree.view model.codebaseTree) ]
-            , nav []
-                (List.map
-                    (\( l, c ) -> Click.view [] [ text l ] c)
-                    subMenu
-                    ++ [ a [ class "show-keyboard-shortcuts", onClick (ShowModal HelpModal) ]
-                            [ text "Keyboard Shortcuts"
-                            , KeyboardShortcut.view model.keyboardShortcut (KeyboardShortcut.single QuestionMark)
+            Just
+                (Sidebar.header
+                    [ div
+                        [ classList
+                            [ ( "namespace-header", True )
+                            , ( "is-overflowing", isOverflowing )
                             ]
-                       ]
+                        ]
+                        [ hashvatar
+                        , h2 [ class "namespace" ] [ FQN.view fqn ]
+                        ]
+                    , UI.divider
+                    ]
                 )
-            ]
-        ]
-    , div [ class "collapsed-content" ]
-        [ unisonSubmenu
-        , Tooltip.tooltip
-            (a
-                [ class "show-help-collapsed", onClick (ShowModal HelpModal) ]
-                [ KeyboardShortcut.view model.keyboardShortcut (KeyboardShortcut.single QuestionMark)
-                ]
+
+
+viewMainSidebar : Model -> Sidebar.Sidebar Msg
+viewMainSidebar model =
+    let
+        withHeader header s =
+            case header of
+                Just h ->
+                    Sidebar.withHeader h s
+
+                Nothing ->
+                    s
+    in
+    Sidebar.empty "main-sidebar"
+        |> withHeader (viewSidebarHeader model.env)
+        |> Sidebar.withSection
+            (Sidebar.section
+                "Code"
+                [ Html.map CodebaseTreeMsg (CodebaseTree.view model.codebaseTree) ]
+                |> Sidebar.sectionWithScrollable
+                |> Sidebar.sectionWithTitleButton
+                    (Button.iconThenLabel ShowFinder Icon.search "Search"
+                        |> Button.small
+                    )
             )
-            (Tooltip.Text "Keyboard Shortcuts")
-            |> Tooltip.withPosition Tooltip.RightOf
-            |> Tooltip.withArrow Tooltip.Middle
-            |> Tooltip.view
-        ]
-    ]
 
 
 viewHelpModal : OperatingSystem -> KeyboardShortcut.Model -> Html Msg
@@ -746,9 +706,10 @@ viewAppLoading =
         [ AppHeader.view (AppHeader.appHeader (appTitle Click.Disabled))
         , PageLayout.view
             (PageLayout.SidebarLeftContentLayout
-                { sidebar = []
+                { sidebar = Sidebar.empty "main-sidebar"
                 , sidebarToggled = False
                 , content = PageContent.empty
+                , footer = PageLayout.PageFooter []
                 }
             )
         ]
@@ -760,7 +721,7 @@ viewAppError error =
         [ AppHeader.view (AppHeader.appHeader (appTitle Click.Disabled))
         , PageLayout.view
             (PageLayout.SidebarLeftContentLayout
-                { sidebar = []
+                { sidebar = Sidebar.empty "main-sidebar"
                 , sidebarToggled = False
                 , content =
                     PageContent.oneColumn
@@ -770,6 +731,7 @@ viewAppError error =
                                 [ text "Unison Local could not be started." ]
                             ]
                         ]
+                , footer = PageLayout.PageFooter []
                 }
             )
         ]
@@ -795,6 +757,7 @@ view model =
                 { sidebar = viewMainSidebar model
                 , sidebarToggled = model.sidebarToggled
                 , content = PageContent.oneColumn [ pageContent ]
+                , footer = PageLayout.PageFooter []
                 }
     in
     { title = "Unison Local"
