@@ -4,7 +4,7 @@ import Code.Definition.Reference as Reference exposing (Reference(..))
 import Code.FullyQualifiedName as FQN exposing (FQN)
 import Code.Hash as Hash exposing (Hash)
 import Code.HashQualified as HQ
-import Code.Perspective exposing (PerspectiveParams(..), RootPerspectiveParam(..))
+import Code.Perspective exposing (PerspectiveParams(..), RootPerspective(..))
 import Expect
 import Test exposing (..)
 import UnisonLocal.Route as Route
