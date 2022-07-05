@@ -493,7 +493,18 @@ appHeader =
     , appTitle = appTitle (Click.Href "/")
     , navigation = Nothing
     , leftSide = []
-    , rightSide = [ Button.button (ShowModal PublishModal) "Publish on Unison Share" |> Button.share |> Button.view ]
+    , rightSide =
+        [ Button.iconThenLabel (ShowModal ReportBugModal) Icon.bug "Report a bug"
+            |> Button.small
+            |> Button.view
+        , Button.iconThenLabel (ShowModal HelpModal) Icon.questionmark "Keyboard shortcuts"
+            |> Button.small
+            |> Button.view
+        , Button.iconThenLabel (ShowModal PublishModal) Icon.upload "Publish on Unison Share"
+            |> Button.share
+            |> Button.small
+            |> Button.view
+        ]
     }
 
 
