@@ -25,7 +25,7 @@
 }
 
 @import "./unison-local/help-modal.css";
-@import "./unison-local/publish-modal.css";
+@import "./unison-local/push-to-share-modal.css";
 @import "./unison-local/report-bug-modal.css";
 @import "./unison-local/perspective-landing.css";
 @import "./unison-local/sidebar.css";

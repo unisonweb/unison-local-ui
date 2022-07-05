@@ -12,8 +12,8 @@ import Code.Namespace as Namespace exposing (NamespaceDetails)
 import Code.Perspective as Perspective exposing (Perspective(..))
 import Code.Workspace as Workspace
 import Code.Workspace.WorkspaceItems as WorkspaceItems
-import Html exposing (Html, a, div, h1, h2, h3, p, section, span, strong, text)
-import Html.Attributes exposing (class, classList, href, id, rel, target, title)
+import Html exposing (Html, div, h1, h2, h3, p, section, span, strong, text)
+import Html.Attributes exposing (class, classList, href, id, title)
 import Http
 import Lib.HttpApi as HttpApi
 import Lib.OperatingSystem exposing (OperatingSystem(..))
@@ -23,6 +23,7 @@ import UI
 import UI.AppHeader as AppHeader
 import UI.Button as Button
 import UI.Click as Click exposing (Click)
+import UI.CopyField as CopyField
 import UI.Icon as Icon
 import UI.KeyboardShortcut as KeyboardShortcut
 import UI.KeyboardShortcut.Key as Key exposing (Key(..))
@@ -47,7 +48,7 @@ type Modal
     | FinderModal Finder.Model
     | HelpModal
     | ReportBugModal
-    | PublishModal
+    | PushToShareModal
 
 
 type alias Model =
@@ -500,7 +501,7 @@ appHeader =
         , Button.iconThenLabel (ShowModal HelpModal) Icon.questionmark "Keyboard shortcuts"
             |> Button.small
             |> Button.view
-        , Button.iconThenLabel (ShowModal PublishModal) Icon.upload "Publish on Unison Share"
+        , Button.iconThenLabel (ShowModal PushToShareModal) Icon.upload "Push to Unison Share"
             |> Button.share
             |> Button.small
             |> Button.view
@@ -635,24 +636,44 @@ viewHelpModal os keyboardShortcut =
         |> Modal.view
 
 
-viewPublishModal : Html Msg
-viewPublishModal =
+viewPushToShareModal : Html Msg
+viewPushToShareModal =
     let
         content =
             Modal.Content
                 (section
                     []
-                    [ p [ class "main" ]
-                        [ text "With your Unison codebase on GitHub, open a Pull Request against "
-                        , Button.github "unisonweb/share" |> Button.view
-                        , text " to list (or unlist) your project on Unison Share."
+                    [ p []
+                        [ text "Unison Share hosts your code in a public namespace under your handle, an example namespace structure of a JSON library might look like this:"
                         ]
-                    , a [ class "help", href "https://www.unisonweb.org/docs/codebase-organization/#day-to-day-development-creating-and-merging-pull-requests", rel "noopener", target "_blank" ] [ text "How do I get my code on GitHub?" ]
+                    , div [ class "example-namespace-structure" ]
+                        [ UI.inlineCode [] (text "<unison-share-handle>.public.jsonLibrary")
+                        ]
+                    , p
+                        []
+                        [ text "Push code to Unison Share with the UCM push command and your Unison Share handle:"
+                        ]
+                    , CopyField.copyField_
+                        Nothing
+                        "push.create <handle>.public .localNamespace"
+                        |> CopyField.withPrefix ".>"
+                        |> CopyField.view
+                    , p [ class "help" ]
+                        [ Icon.view Icon.bulb
+                        , span []
+                            [ text "This will push all the contents of "
+                            , UI.inlineCode [] (text ".localNamespace")
+                            , text " to "
+                            , UI.inlineCode [] (text "<handle>.public")
+                            , text "."
+                            ]
+                        ]
+                    , div [ class "actions" ] [ Button.button CloseModal "Got It!" |> Button.primary |> Button.medium |> Button.view ]
                     ]
                 )
     in
-    Modal.modal "publish-modal" CloseModal content
-        |> Modal.withHeader "Publish your project on Unison Share"
+    Modal.modal "push-to-share-modal" CloseModal content
+        |> Modal.withHeader "Push your code to Unison Share"
         |> Modal.view
 
 
@@ -704,8 +725,8 @@ viewModal model =
         HelpModal ->
             viewHelpModal model.env.operatingSystem model.keyboardShortcut
 
-        PublishModal ->
-            viewPublishModal
+        PushToShareModal ->
+            viewPushToShareModal
 
         ReportBugModal ->
             viewReportBugModal
