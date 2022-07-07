@@ -496,10 +496,7 @@ appHeader =
     , navigation = Nothing
     , leftSide = []
     , rightSide =
-        [ Button.iconThenLabel (ShowModal ReportBugModal) Icon.bug "Report a bug"
-            |> Button.small
-            |> Button.view
-        , Button.iconThenLabel (ShowModal HelpModal) Icon.questionmark "Keyboard shortcuts"
+        [ Button.iconThenLabel (ShowModal HelpModal) Icon.questionmark "Help & Resources"
             |> Button.small
             |> Button.view
         , Button.iconThenLabel (ShowModal PushToShareModal) Icon.upload "Push to Unison Share"
@@ -569,6 +566,7 @@ viewMainSidebar model =
                         |> Button.small
                     )
             )
+        |> Sidebar.withToggle { isToggled = model.sidebarToggled, toggleMsg = ToggleSidebar }
 
 
 viewHelpModal : OperatingSystem -> KeyboardShortcut.Model -> Html Msg
