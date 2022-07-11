@@ -20,6 +20,7 @@ import Lib.OperatingSystem exposing (OperatingSystem(..))
 import Lib.Util as Util
 import RemoteData
 import UI
+import UI.ActionMenu as ActionMenu
 import UI.AppHeader as AppHeader
 import UI.Button as Button
 import UI.Click as Click exposing (Click)
@@ -47,7 +48,7 @@ import Url exposing (Url)
 type Modal
     = NoModal
     | FinderModal Finder.Model
-    | HelpModal
+    | KeyboardShortcutsModal
     | ReportBugModal
     | PushToShareModal
 
@@ -64,6 +65,7 @@ type alias Model =
     -- This is called "toggled" and not "hidden" because the behavior of
     -- toggling the sidebar on/off is inverse on mobile vs desktop
     , sidebarToggled : Bool
+    , isHelpAndResourcesMenuOpen : Bool
     }
 
 
@@ -99,6 +101,7 @@ init env route =
             , keyboardShortcut = KeyboardShortcut.init env.operatingSystem
             , env = env
             , sidebarToggled = False
+            , isHelpAndResourcesMenuOpen = False
             }
     in
     ( model
@@ -125,6 +128,7 @@ type Msg
     | ShowFinder
     | CloseModal
     | ToggleSidebar
+    | ToggleHelpAndResourcesMenu
       -- sub msgs
     | FinderMsg Finder.Msg
     | WorkspaceMsg Workspace.Msg
@@ -214,7 +218,7 @@ update msg ({ env } as model) =
             navigateToDefinition model ref
 
         ShowModal modal ->
-            ( { model | modal = modal }, Cmd.none )
+            ( { model | modal = modal, isHelpAndResourcesMenuOpen = False }, Cmd.none )
 
         ShowFinder ->
             showFinder model Nothing
@@ -224,6 +228,9 @@ update msg ({ env } as model) =
 
         ToggleSidebar ->
             ( { model | sidebarToggled = not model.sidebarToggled }, Cmd.none )
+
+        ToggleHelpAndResourcesMenu ->
+            ( { model | isHelpAndResourcesMenuOpen = not model.isHelpAndResourcesMenuOpen }, Cmd.none )
 
         -- Sub msgs
         WorkspaceMsg wMsg ->
@@ -415,10 +422,10 @@ keydown model keyboardEvent =
             toggleSidebar
 
         KeyboardShortcut.Chord Shift QuestionMark ->
-            ( { model | modal = HelpModal }, Cmd.none )
+            ( { model | modal = KeyboardShortcutsModal }, Cmd.none )
 
         KeyboardShortcut.Sequence _ Escape ->
-            if model.modal == HelpModal then
+            if model.modal == KeyboardShortcutsModal then
                 ( { model | modal = NoModal }, Cmd.none )
 
             else
@@ -489,16 +496,30 @@ appTitle click =
         )
 
 
-appHeader : AppHeader.AppHeader Msg
-appHeader =
+appHeader : Bool -> AppHeader.AppHeader Msg
+appHeader isHelpAndResourcesMenuOpen =
+    let
+        actionMenu =
+            ActionMenu.items
+                { icon = Icon.docs, label = "Docs", click = Link.docs }
+                [ { icon = Icon.upload, label = "Unison Share", click = Link.unisonShare }
+                , { icon = Icon.bug, label = "Report a Bug", click = Click.onClick (ShowModal ReportBugModal) }
+                , { icon = Icon.keyboardKey, label = "Keyboard Shortcuts", click = Click.onClick (ShowModal KeyboardShortcutsModal) }
+                , { icon = Icon.unfoldedMap, label = "Code of Conduct", click = Link.github }
+                , { icon = Icon.unisonMark, label = "Unison Website", click = Link.website }
+                , { icon = Icon.github, label = "Unison on GitHub", click = Link.github }
+                ]
+                |> ActionMenu.actionMenu ToggleHelpAndResourcesMenu "Help & Resources"
+                |> ActionMenu.shouldBeOpen isHelpAndResourcesMenuOpen
+                |> ActionMenu.withButtonIcon Icon.questionmark
+                |> ActionMenu.view
+    in
     { menuToggle = Just ToggleSidebar
     , appTitle = appTitle (Click.Href "/")
     , navigation = Nothing
     , leftSide = []
     , rightSide =
-        [ Button.iconThenLabel (ShowModal HelpModal) Icon.questionmark "Help & Resources"
-            |> Button.small
-            |> Button.view
+        [ actionMenu
         , Button.iconThenLabel (ShowModal PushToShareModal) Icon.upload "Push to Unison Share"
             |> Button.share
             |> Button.small
@@ -569,8 +590,8 @@ viewMainSidebar model =
         |> Sidebar.withToggle { isToggled = model.sidebarToggled, toggleMsg = ToggleSidebar }
 
 
-viewHelpModal : OperatingSystem -> KeyboardShortcut.Model -> Html Msg
-viewHelpModal os keyboardShortcut =
+viewKeyboardShortcutsModal : OperatingSystem -> KeyboardShortcut.Model -> Html Msg
+viewKeyboardShortcutsModal os keyboardShortcut =
     let
         viewRow label instructions =
             div
@@ -722,8 +743,8 @@ viewModal model =
         FinderModal m ->
             Html.map FinderMsg (Finder.view m)
 
-        HelpModal ->
-            viewHelpModal model.env.operatingSystem model.keyboardShortcut
+        KeyboardShortcutsModal ->
+            viewKeyboardShortcutsModal model.env.operatingSystem model.keyboardShortcut
 
         PushToShareModal ->
             viewPushToShareModal
@@ -795,7 +816,7 @@ view model =
     { title = "Unison Local"
     , body =
         [ div [ id "app" ]
-            [ AppHeader.view appHeader
+            [ AppHeader.view (appHeader model.isHelpAndResourcesMenuOpen)
             , PageLayout.view page
             , viewModal model
             ]
