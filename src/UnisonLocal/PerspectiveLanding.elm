@@ -13,7 +13,6 @@ import RemoteData exposing (RemoteData(..))
 import UI
 import UI.Button as Button exposing (Button)
 import UI.Icon as Icon
-import UI.Toolbar as Toolbar
 
 
 type alias Model =
@@ -156,28 +155,17 @@ view perspective model =
                     viewLoading
 
                 Success (Namespace _ _ { readme }) ->
-                    let
-                        content =
-                            case readme of
-                                Just r ->
-                                    container
-                                        [ div [ class "perspective-landing-readme" ]
-                                            [ header [ class "title" ] [ Icon.view Icon.doc, text "README" ]
-                                            , Readme.view OpenReference ToggleDocFold model r
-                                            ]
-                                        ]
+                    case readme of
+                        Just r ->
+                            container
+                                [ div [ class "perspective-landing-readme" ]
+                                    [ header [ class "title" ] [ Icon.view Icon.doc, text "README" ]
+                                    , Readme.view OpenReference ToggleDocFold model r
+                                    ]
+                                ]
 
-                                Nothing ->
-                                    viewEmptyStateNamespace fqn
-                    in
-                    div []
-                        [ Button.iconThenLabel Find Icon.search "Find Definition"
-                            |> Button.small
-                            |> Button.view
-                            |> Toolbar.toolbar
-                            |> Toolbar.view
-                        , content
-                        ]
+                        Nothing ->
+                            viewEmptyStateNamespace fqn
 
                 Failure error ->
                     viewError fqn (Util.httpErrorToString error)

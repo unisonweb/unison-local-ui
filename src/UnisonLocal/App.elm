@@ -793,25 +793,30 @@ viewAppError error =
 view : Model -> Browser.Document Msg
 view model =
     let
-        pageContent =
+        page =
             case model.route of
                 Route.Perspective _ ->
-                    Html.map PerspectiveLandingMsg
-                        (PerspectiveLanding.view
-                            model.env.perspective
-                            model.perspectiveLanding
-                        )
+                    PageLayout.SidebarLeftContentLayout
+                        { sidebar = viewMainSidebar model
+                        , sidebarToggled = model.sidebarToggled
+                        , content =
+                            PageContent.oneColumn
+                                [ Html.map PerspectiveLandingMsg
+                                    (PerspectiveLanding.view
+                                        model.env.perspective
+                                        model.perspectiveLanding
+                                    )
+                                ]
+                        , footer = PageLayout.PageFooter []
+                        }
 
                 Route.Definition _ _ ->
-                    Html.map WorkspaceMsg (Workspace.view model.workspace)
-
-        page =
-            PageLayout.SidebarEdgeToEdgeLayout
-                { sidebar = viewMainSidebar model
-                , sidebarToggled = model.sidebarToggled
-                , content = PageContent.oneColumn [ pageContent ]
-                , footer = PageLayout.PageFooter []
-                }
+                    PageLayout.SidebarEdgeToEdgeLayout
+                        { sidebar = viewMainSidebar model
+                        , sidebarToggled = model.sidebarToggled
+                        , content = PageContent.oneColumn [ Html.map WorkspaceMsg (Workspace.view model.workspace) ]
+                        , footer = PageLayout.PageFooter []
+                        }
     in
     { title = "Unison Local"
     , body =
