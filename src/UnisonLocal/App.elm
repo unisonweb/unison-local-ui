@@ -505,7 +505,7 @@ appHeader isHelpAndResourcesMenuOpen =
                 [ { icon = Icon.upload, label = "Unison Share", click = Link.unisonShare }
                 , { icon = Icon.bug, label = "Report a Bug", click = Click.onClick (ShowModal ReportBugModal) }
                 , { icon = Icon.keyboardKey, label = "Keyboard Shortcuts", click = Click.onClick (ShowModal KeyboardShortcutsModal) }
-                , { icon = Icon.unfoldedMap, label = "Code of Conduct", click = Link.github }
+                , { icon = Icon.unfoldedMap, label = "Code of Conduct", click = Link.codeOfConduct }
                 , { icon = Icon.unisonMark, label = "Unison Website", click = Link.website }
                 , { icon = Icon.github, label = "Unison on GitHub", click = Link.github }
                 ]
