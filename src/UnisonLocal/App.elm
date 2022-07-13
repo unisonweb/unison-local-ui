@@ -617,7 +617,7 @@ viewKeyboardShortcutsModal os keyboardShortcut =
                     [ KeyboardShortcut.Chord Meta (B Key.Lower), KeyboardShortcut.Chord Ctrl (B Key.Lower) ]
 
                 _ ->
-                    [ KeyboardShortcut.Chord Ctrl (B Key.Lower), KeyboardShortcut.single (S Key.Lower) ]
+                    [ KeyboardShortcut.Chord Ctrl (B Key.Lower) ]
 
         content =
             Modal.Content
@@ -758,10 +758,8 @@ viewAppLoading =
     div [ id "app" ]
         [ AppHeader.view (AppHeader.appHeader (appTitle Click.Disabled))
         , PageLayout.view
-            (PageLayout.SidebarLeftContentLayout
-                { sidebar = Sidebar.empty "main-sidebar"
-                , sidebarToggled = False
-                , content = PageContent.empty
+            (PageLayout.CenteredLayout
+                { content = PageContent.empty
                 , footer = PageLayout.PageFooter []
                 }
             )
@@ -773,10 +771,8 @@ viewAppError error =
     div [ id "app" ]
         [ AppHeader.view (AppHeader.appHeader (appTitle Click.Disabled))
         , PageLayout.view
-            (PageLayout.SidebarLeftContentLayout
-                { sidebar = Sidebar.empty "main-sidebar"
-                , sidebarToggled = False
-                , content =
+            (PageLayout.CenteredLayout
+                { content =
                     PageContent.oneColumn
                         [ div [ class "app-error" ]
                             [ Icon.view Icon.warn
@@ -799,6 +795,7 @@ view model =
                     PageLayout.SidebarLeftContentLayout
                         { sidebar = viewMainSidebar model
                         , sidebarToggled = model.sidebarToggled
+                        , operatingSystem = model.env.operatingSystem
                         , content =
                             PageContent.oneColumn
                                 [ Html.map PerspectiveLandingMsg
@@ -814,6 +811,7 @@ view model =
                     PageLayout.SidebarEdgeToEdgeLayout
                         { sidebar = viewMainSidebar model
                         , sidebarToggled = model.sidebarToggled
+                        , operatingSystem = model.env.operatingSystem
                         , content = PageContent.oneColumn [ Html.map WorkspaceMsg (Workspace.view model.workspace) ]
                         , footer = PageLayout.PageFooter []
                         }
