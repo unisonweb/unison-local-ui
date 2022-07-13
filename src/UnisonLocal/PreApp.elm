@@ -5,7 +5,6 @@ import Browser.Navigation as Nav
 import Code.Perspective as Perspective exposing (PerspectiveParams)
 import Html
 import Http
-import Lib.OperatingSystem as OS
 import UnisonLocal.App as App
 import UnisonLocal.Env as Env exposing (Flags)
 import UnisonLocal.Route as Route exposing (Route)
