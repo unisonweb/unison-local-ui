@@ -1,5 +1,6 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const postcssCustomMedia = require("postcss-custom-media");
 
 const API_URL = process.env.API_URL || "127.0.0.1:8080";
 const UI_CORE_SRC = "elm-stuff/gitdeps/github.com/unisonweb/ui-core/src";
@@ -18,7 +19,25 @@ module.exports = {
     rules: [
       {
         test: /\.css$/i,
-        use: ["style-loader", "css-loader"],
+        use: [
+          "style-loader",
+          {
+            loader: "css-loader",
+            options: { importLoaders: 1 },
+          },
+          {
+            loader: "postcss-loader",
+            options: {
+              postcssOptions: {
+                plugins: [
+                  postcssCustomMedia({
+                    importFrom: `${UI_CORE_SRC}/css/ui/viewport.css`,
+                  }),
+                ],
+              },
+            },
+          },
+        ],
       },
       {
         test: /\.(png|svg|jpg|jpeg|gif)$/i,

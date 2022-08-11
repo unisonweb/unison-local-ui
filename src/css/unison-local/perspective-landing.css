@@ -76,14 +76,6 @@
   margin-right: 0.5rem;
 }
 
-@media only screen and (max-width: 1024px) {
-  #perspective-landing {
-    box-shadow: none;
-    height: auto;
-    width: auto;
-  }
-}
-
 .perspective-landing-empty-state {
   margin-top: 2rem;
   font-size: 1rem;
@@ -170,7 +162,13 @@
   padding-left: 1.25rem;
 }
 
-@media only screen and (max-width: 1024px) {
+@media only screen and (--u-viewport_max-lg) {
+  #perspective-landing {
+    box-shadow: none;
+    height: auto;
+    width: auto;
+  }
+
   #perspective-landing-content {
     width: calc(100vw - 2rem);
   }
@@ -185,7 +183,7 @@
   }
 }
 
-@media only screen and (max-width: 414px) {
+@media only screen and (--u-viewport_max-sm) {
   .perspective-landing-empty-state .faux-empty-state-item {
     width: calc(100vw - 4rem);
   }

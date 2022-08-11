@@ -33,6 +33,7 @@ import UI.Modal as Modal
 import UI.PageContent as PageContent
 import UI.PageLayout as PageLayout
 import UI.Sidebar as Sidebar
+import UI.ViewMode as ViewMode
 import UnisonLocal.Api as LocalApi
 import UnisonLocal.Env as Env exposing (Env)
 import UnisonLocal.Link as Link
@@ -518,6 +519,7 @@ appHeader isHelpAndResourcesMenuOpen =
     , appTitle = appTitle (Click.Href "/")
     , navigation = Nothing
     , leftSide = []
+    , viewMode = ViewMode.Regular
     , rightSide =
         [ actionMenu
         , Button.iconThenLabel (ShowModal PushToShareModal) Icon.upload "Push to Unison Share"
@@ -812,7 +814,10 @@ view model =
                         { sidebar = viewMainSidebar model
                         , sidebarToggled = model.sidebarToggled
                         , operatingSystem = model.env.operatingSystem
-                        , content = PageContent.oneColumn [ Html.map WorkspaceMsg (Workspace.view model.workspace) ]
+                        , content =
+                            PageContent.oneColumn
+                                [ Html.map WorkspaceMsg (Workspace.view ViewMode.Regular model.workspace)
+                                ]
                         , footer = PageLayout.PageFooter []
                         }
     in
