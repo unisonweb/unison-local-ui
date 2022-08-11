@@ -397,10 +397,21 @@ handleWorkspaceOutMsg ({ env } as model) out =
         Workspace.Emptied ->
             ( model, Route.navigateToCurrentPerspective env.navKey model.route )
 
-        Workspace.ChangePerspectiveToNamespace fqn ->
-            fqn
-                |> Perspective.toNamespacePerspective model.env.perspective
-                |> navigateToPerspective model
+        Workspace.ChangePerspectiveToSubNamespace subFqn ->
+            let
+                perspective =
+                    let
+                        fullFqn =
+                            case env.perspective of
+                                Perspective.Namespace { fqn } ->
+                                    FQN.append fqn subFqn
+
+                                _ ->
+                                    subFqn
+                    in
+                    Perspective.toNamespacePerspective env.perspective fullFqn
+            in
+            navigateToPerspective model perspective
 
 
 keydown : Model -> KeyboardEvent -> ( Model, Cmd Msg )
