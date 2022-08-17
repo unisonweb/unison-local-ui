@@ -3,15 +3,6 @@ Unison Local UI
 
 [![CI](https://github.com/unisonweb/unison-local-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/unisonweb/unison-local-ui/actions/workflows/ci.yml)
 
-Dependencies
-------------
-
-This depends on the [ui-core package](https://github.com/unisonweb/ui-core) via
-[elm-git-install](https://github.com/robinheghan/elm-git-install). That package
-includes both the Unison design system, and a core set of components for
-working with and rendering Unison definitions and
-namespaces.
-
 Running Development Server
 --------------------------
 
@@ -27,6 +18,30 @@ Running Development Server
 3. Start the dev server with: `API_URL="<API URL FROM UCM>" npm start`
 
 4. Visit `http://localhost:1234` in a browser.
+
+Dependencies
+------------
+
+This depends on the [ui-core package](https://github.com/unisonweb/ui-core) via
+[elm-git-install](https://github.com/robinheghan/elm-git-install). That package
+includes both the Unison design system, and a core set of components for
+working with and rendering Unison definitions and
+namespaces.
+
+Bumping [ui-core package](https://github.com/unisonweb/ui-core)
+---------------------------------------------------------------
+
+The UI Core dependency can be updated to its latest version with this command:
+
+```bash
+npm run ui-core:update
+```
+
+To install a specific sha:
+
+```bash
+npm run ui-core:install -- [SOME_UI_CORE_SHA]
+```
 
 Community
 --------

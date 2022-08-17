@@ -12,13 +12,15 @@
     "start": "webpack serve --mode development --port 1234 --config webpack.dev.js",
     "test": "elm-test",
     "review": "elm-review",
-    "ui-core:install": "scripts/ui-core-install.js"
+    "ui-core:install": "scripts/ui-core-install.js",
+    "ui-core:update": "scripts/ui-core-update.js"
   },
   "bugs": {
     "url": "https://github.com/unisonweb/codebase-ui/issues"
   },
   "homepage": "https://github.com/unisonweb/codebase-ui#readme",
   "devDependencies": {
+    "@octokit/core": "^4.0.5",
     "archiver": "^5.3.0",
     "copy-webpack-plugin": "^8.1.1",
     "css-loader": "^5.2.4",

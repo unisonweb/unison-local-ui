@@ -237,7 +237,7 @@ update msg ({ env } as model) =
         WorkspaceMsg wMsg ->
             let
                 ( workspace, wCmd, outMsg ) =
-                    Workspace.update codebaseConfig wMsg model.workspace
+                    Workspace.update codebaseConfig ViewMode.Regular wMsg model.workspace
 
                 model2 =
                     { model | workspace = workspace }
