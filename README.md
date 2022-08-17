@@ -3,6 +3,8 @@ Unison Local UI
 
 [![CI](https://github.com/unisonweb/unison-local-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/unisonweb/unison-local-ui/actions/workflows/ci.yml)
 
+This is the UI you see when you type `ui` into `ucm`.
+
 Running Development Server
 --------------------------
 
