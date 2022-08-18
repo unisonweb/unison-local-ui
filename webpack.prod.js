@@ -1,7 +1,7 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const FileManagerPlugin = require("filemanager-webpack-plugin");
-const postcssCustomMedia = require("postcss-custom-media");
+const postcssPresetEnv = require("postcss-preset-env");
 
 const UI_CORE_SRC = "elm-stuff/gitdeps/github.com/unisonweb/ui-core/src";
 
@@ -21,8 +21,13 @@ const unisonLocalCfg = {
             options: {
               postcssOptions: {
                 plugins: [
-                  postcssCustomMedia({
-                    importFrom: `${UI_CORE_SRC}/css/ui/viewport.css`,
+                  postcssPresetEnv({
+                    features: {
+                      "is-pseudo-class": false,
+                      "custom-media-queries": {
+                        importFrom: `${UI_CORE_SRC}/css/ui/viewport.css`,
+                      },
+                    },
                   }),
                 ],
               },

@@ -1,6 +1,6 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const postcssCustomMedia = require("postcss-custom-media");
+const postcssPresetEnv = require("postcss-preset-env");
 
 const API_URL = process.env.API_URL || "127.0.0.1:8080";
 const UI_CORE_SRC = "elm-stuff/gitdeps/github.com/unisonweb/ui-core/src";
@@ -30,8 +30,13 @@ module.exports = {
             options: {
               postcssOptions: {
                 plugins: [
-                  postcssCustomMedia({
-                    importFrom: `${UI_CORE_SRC}/css/ui/viewport.css`,
+                  postcssPresetEnv({
+                    features: {
+                      "is-pseudo-class": false,
+                      "custom-media-queries": {
+                        importFrom: `${UI_CORE_SRC}/css/ui/viewport.css`,
+                      },
+                    },
                   }),
                 ],
               },
