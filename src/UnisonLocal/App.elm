@@ -560,6 +560,9 @@ viewSidebarHeader env =
                     details
                         |> RemoteData.map (Namespace.hash >> Hashvatar.view)
                         |> RemoteData.withDefault Hashvatar.empty
+
+                toClick fqn_ =
+                    Click.onClick (ChangePerspective (Perspective.toNamespacePerspective env.perspective fqn_))
             in
             Just
                 (Sidebar.header
@@ -570,7 +573,7 @@ viewSidebarHeader env =
                             ]
                         ]
                         [ hashvatar
-                        , h2 [ class "namespace" ] [ FQN.view fqn ]
+                        , h2 [ class "namespace" ] [ FQN.viewClickable toClick fqn ]
                         ]
                     , UI.divider
                     ]
