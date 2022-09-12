@@ -19,7 +19,7 @@ import Url.Builder exposing (QueryParameter, int, string)
 
 codebaseHash : Endpoint
 codebaseHash =
-    GET { path = [ "list" ], queryParams = [ string "namespace" "." ] }
+    GET { path = [ "list" ], queryParams = [] }
 
 
 namespace : Perspective -> FQN -> Endpoint
@@ -68,11 +68,14 @@ codebaseApiEndpointToEndpoint cbEndpoint =
         CodebaseApi.Browse { perspective, ref } ->
             let
                 namespace_ =
-                    ref |> Maybe.map NamespaceRef.toString |> Maybe.withDefault "."
+                    ref
+                        |> Maybe.map NamespaceRef.toString
+                        |> Maybe.map (string "namespace")
+                        |> Maybe.map (\qp -> [ qp ])
             in
             GET
                 { path = [ "list" ]
-                , queryParams = string "namespace" namespace_ :: perspectiveToQueryParams perspective
+                , queryParams = Maybe.withDefault [] namespace_ ++ perspectiveToQueryParams perspective
                 }
 
         CodebaseApi.Definition { perspective, ref } ->
