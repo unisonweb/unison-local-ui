@@ -389,7 +389,7 @@ handleWorkspaceOutMsg ({ env } as model) out =
             ( model, Cmd.none )
 
         Workspace.ShowFinderRequest withinNamespace ->
-            showFinder model withinNamespace
+            showFinder model (Just withinNamespace)
 
         Workspace.Focused ref ->
             ( model, Route.navigateToDefinition env.navKey model.route ref )
@@ -444,7 +444,11 @@ keydown model keyboardEvent =
                 noOp
 
         _ ->
-            noOp
+            if Finder.isShowFinderKeyboardShortcut model.env.operatingSystem shortcut then
+                showFinder model Nothing
+
+            else
+                noOp
 
 
 showFinder :
