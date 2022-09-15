@@ -15,7 +15,6 @@
 }
 
 #perspective-landing-content {
-  padding-top: 2rem;
   padding-left: 1.5rem;
   height: calc(100vh - var(--main-header-height));
   width: var(--main-content-width);
