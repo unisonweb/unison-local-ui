@@ -16,8 +16,6 @@
 
 #perspective-landing-content {
   padding-left: 1.5rem;
-  height: calc(100vh - var(--main-header-height));
-  width: var(--main-content-width);
   scrollbar-width: auto;
   scrollbar-color: var(--u-color_scrollbar) var(--u-color_scrollbar-track);
 }
@@ -76,7 +74,6 @@
 }
 
 .perspective-landing-empty-state {
-  margin-top: 2rem;
   font-size: 1rem;
   background: url(assets/empty-state-bg.svg);
   background-position: center bottom;
