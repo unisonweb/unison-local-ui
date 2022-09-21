@@ -397,7 +397,7 @@ handleWorkspaceOutMsg ({ env } as model) out =
         Workspace.Emptied ->
             ( model, Route.navigateToCurrentPerspective env.navKey model.route )
 
-        Workspace.ChangePerspectiveToSubNamespace subFqn ->
+        Workspace.ChangePerspectiveToSubNamespace _ subFqn ->
             let
                 perspective =
                     let

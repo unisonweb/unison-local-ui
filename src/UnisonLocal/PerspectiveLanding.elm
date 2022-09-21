@@ -12,6 +12,7 @@ import Lib.Util as Util
 import RemoteData exposing (RemoteData(..))
 import UI
 import UI.Button as Button exposing (Button)
+import UI.Click as Click
 import UI.Icon as Icon
 
 
@@ -160,7 +161,7 @@ view perspective model =
                             container
                                 [ div [ class "perspective-landing-readme" ]
                                     [ header [ class "title" ] [ Icon.view Icon.doc, text "README" ]
-                                    , Readme.view OpenReference ToggleDocFold model r
+                                    , Readme.view (OpenReference >> Click.onClick) ToggleDocFold model r
                                     ]
                                 ]
 
