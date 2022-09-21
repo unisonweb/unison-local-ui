@@ -6,9 +6,35 @@ on:
   pull_request:
     branches: [ main ]
 
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release Tag (E.g. release/M4 or release/M4a)'
+        required: true
+        default: latest
+        type: string
+      previous_tag:
+        description: 'Tag to create release notes since'
+        required: false
+        type: string
+      target:
+        description: 'Ref to create  the release from'
+        required: true
+        default: main
+        type: string
+      prerelease:
+        description: 'Whether this release is a pre-release'
+        required: true
+        default: true
+        type: boolean
+      draft:
+        description: 'Whether this release is a draft'
+        required: true
+        default: true
+        type: boolean
+
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -28,3 +54,25 @@ jobs:
     - run: npm run build
     - run: npm test
     - run: npm run review
+
+  release:
+    name: "Create a (pre)release"
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: ${{ github.ref_name == 'main' }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm ci
+      - run: npm run ui-core:install
+      - run: npm run build
+      - run: |
+          tag="${{inputs.tag || 'latest'}}"
+          target="${{inputs.target || 'main'}}"
+          prereleaseFlag="${{((inputs.prerelease == null && '--prerelease') || ((inputs.prerelease == true) && '--prerelease')) || ''}}"
+          draftFlag="${{(inputs.draft && '--draft') || ''}}"
+          prevTagFlag=${{ inputs.previous_tag && "--notes-start-tag ${{inputs.previous_tag}}"}}
+          gh release create "${tag}" --target "${target}" --generate-notes $prevVersionFlag $prereleaseFlag $draftFlag dist/*.zip
