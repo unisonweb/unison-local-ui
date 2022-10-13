@@ -1,11 +1,14 @@
 module UnisonLocal.PerspectiveLanding exposing (..)
 
+import Code.Config exposing (Config)
 import Code.Definition.Doc as Doc
 import Code.Definition.Readme as Readme
 import Code.Definition.Reference exposing (Reference)
+import Code.DefinitionSummaryTooltip as DefinitionSummaryTooltip
 import Code.FullyQualifiedName as FQN exposing (FQN)
 import Code.Namespace exposing (Namespace(..))
 import Code.Perspective as Perspective exposing (Perspective)
+import Code.Syntax as Syntax
 import Html exposing (Html, a, article, div, h2, header, p, section, span, strong, text)
 import Html.Attributes exposing (class, href, id, rel, target)
 import Lib.Util as Util
@@ -17,18 +20,23 @@ import UI.Icon as Icon
 
 
 type alias Model =
-    Doc.DocFoldToggles
+    { foldToggles : Doc.DocFoldToggles
+    , definitionSummaryTooltip : DefinitionSummaryTooltip.Model
+    }
 
 
 init : Model
 init =
-    Doc.emptyDocFoldToggles
+    { foldToggles = Doc.emptyDocFoldToggles
+    , definitionSummaryTooltip = DefinitionSummaryTooltip.init
+    }
 
 
 type Msg
     = OpenReference Reference
     | ToggleDocFold Doc.FoldId
     | Find
+    | DefinitionSummaryTooltipMsg DefinitionSummaryTooltip.Msg
 
 
 type OutMsg
@@ -37,17 +45,27 @@ type OutMsg
     | None
 
 
-update : Msg -> Model -> ( Model, OutMsg )
-update msg model =
+update : Config -> Msg -> Model -> ( Model, Cmd Msg, OutMsg )
+update config msg model =
     case msg of
         OpenReference r ->
-            ( model, OpenDefinition r )
+            ( model, Cmd.none, OpenDefinition r )
 
         Find ->
-            ( model, ShowFinderRequest )
+            ( model, Cmd.none, ShowFinderRequest )
 
         ToggleDocFold fid ->
-            ( Doc.toggleFold model fid, None )
+            ( { model | foldToggles = Doc.toggleFold model.foldToggles fid }, Cmd.none, None )
+
+        DefinitionSummaryTooltipMsg tMsg ->
+            let
+                ( definitionSummaryTooltip, tCmd ) =
+                    DefinitionSummaryTooltip.update config tMsg model.definitionSummaryTooltip
+            in
+            ( { model | definitionSummaryTooltip = definitionSummaryTooltip }
+            , Cmd.map DefinitionSummaryTooltipMsg tCmd
+            , None
+            )
 
 
 
@@ -121,7 +139,7 @@ viewEmptyStateRoot =
             ]
         ]
         (Button.iconThenLabel Find Icon.search "Find Definition"
-            |> Button.primary
+            |> Button.emphasized
             |> Button.medium
         )
 
@@ -136,7 +154,7 @@ viewEmptyStateNamespace fqn =
         (FQN.view fqn)
         [ p [] [ text "Browse, search, read docs, open definitions, and explore" ] ]
         (Button.iconThenLabel Find Icon.search ("Find Definitions in " ++ fqn_)
-            |> Button.primary
+            |> Button.emphasized
             |> Button.medium
         )
 
@@ -158,10 +176,23 @@ view perspective model =
                 Success (Namespace _ _ { readme }) ->
                     case readme of
                         Just r ->
+                            let
+                                syntaxConfig =
+                                    Syntax.linkedWithTooltipConfig
+                                        (OpenReference >> Click.onClick)
+                                        (DefinitionSummaryTooltip.tooltipConfig
+                                            DefinitionSummaryTooltipMsg
+                                            model.definitionSummaryTooltip
+                                        )
+                            in
                             container
                                 [ div [ class "perspective-landing-readme" ]
                                     [ header [ class "title" ] [ Icon.view Icon.doc, text "README" ]
-                                    , Readme.view (OpenReference >> Click.onClick) ToggleDocFold model r
+                                    , Readme.view
+                                        syntaxConfig
+                                        ToggleDocFold
+                                        model.foldToggles
+                                        r
                                     ]
                                 ]
 

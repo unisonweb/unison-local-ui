@@ -1,13 +1,12 @@
 #app {
   display: grid;
-  grid-template-rows: var(--app-header-height) auto;
-  grid-template-columns: auto;
-  grid-template-areas:
-    "app-header"
-    "page-layout";
+  height: 100vh;
+  grid-template-rows: auto 1fr;
+  grid-template-columns: 1fr;
+  grid-template-areas: "app-header" "page-layout";
 }
 
-/* -- App Error ---------------------------------------------------------- */
+/* -- App Error ------------------------------------------------------------ */
 
 .app-error {
   display: flex;
@@ -24,41 +23,63 @@
   color: var(--u-color_critical_icon);
 }
 
-/* TODO: These styles are also present in unison-share-ui, and should make their way back to ui-core */
-@media only screen and (--u-viewport_min-lg) {
-  /* For larger screens, when the sidebar is "toggled" its collapsed */
-  #app .page.sidebar-toggled .sidebar-header {
-    opacity: 1;
-    pointer-events: initial;
-  }
+/* -- Code ----------------------------------------------------------------- */
 
-  .page.sidebar-toggled #main-sidebar .sidebar-header .namespace,
-  .page.sidebar-toggled .sidebar-header .perspective-actions,
-  .page.sidebar-toggled .sidebar-header .perspective-tree-divider {
-    display: none;
-  }
+/* TODO: Move this to a CodePage component in ui-core */
+.sidebar .namespace-header {
+  display: flex;
+  flex-direction: row;
+  gap: 0.75rem;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
 }
 
-@media only screen and (--u-viewport_max-lg) {
-  #announcement {
-    font-size: var(--font-size-small);
-  }
+.sidebar .namespace-header .icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
 
-  .page .sidebar-header,
-  .page.sidebar-toggled .sidebar-section {
-    opacity: 1;
-    pointer-events: initial;
-  }
+.sidebar .is-overflowing .namespace-header .icon:after {
+  position: absolute;
+  top: 0;
+  right: -1.5rem;
+  bottom: 0;
+  content: "";
+  width: 1.5rem;
+  background: linear-gradient(
+    90deg,
+    var(--color-sidebar-bg),
+    var(--color-sidebar-bg),
+    var(--color-sidebar-bg-transparent)
+  );
+}
 
-  .page:not(.sidebar-toggled) #main-sidebar .sidebar-header .namespace,
-  .page:not(.sidebar-toggled) .sidebar-header .perspective-actions,
-  .page:not(.sidebar-toggled) .sidebar-header .perspective-tree-divider {
-    display: none;
-  }
+.sidebar .namespace-header .namespace {
+  display: inline-flex;
+  color: var(--color-sidebar-fg-em);
+  font-size: 1rem;
+  font-weight: 500;
+  height: 1.5rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: right;
+  flex-direction: row-reverse;
+}
+
+.sidebar .sidebar_collapsed .namespace-header {
+  gap: 0.25rem;
+}
+
+.sidebar .sidebar_collapsed .namespace-header .icon {
+  font-size: var(--font-size-base);
+}
+
+.sidebar .sidebar_collapsed .namespace-header .namespace {
+  font-size: var(--font-size-small);
 }
 
 @import "./unison-local/help-modal.css";
 @import "./unison-local/push-to-share-modal.css";
 @import "./unison-local/report-bug-modal.css";
 @import "./unison-local/perspective-landing.css";
-@import "./unison-local/sidebar.css";

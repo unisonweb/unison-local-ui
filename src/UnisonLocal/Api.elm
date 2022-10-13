@@ -8,6 +8,7 @@ import Code.CodebaseApi as CodebaseApi
 import Code.Definition.Reference as Reference
 import Code.FullyQualifiedName as FQN exposing (FQN)
 import Code.Hash as Hash exposing (Hash)
+import Code.HashQualified as HQ
 import Code.Namespace.NamespaceRef as NamespaceRef
 import Code.Perspective as Perspective exposing (Perspective(..))
 import Code.Syntax as Syntax
@@ -90,6 +91,55 @@ codebaseApiEndpointToEndpoint cbEndpoint =
                 |> List.map stripConstructorPositionFromHash
                 |> List.map (string "names")
                 |> (\names -> GET { path = [ "getDefinition" ], queryParams = names ++ perspectiveToQueryParams perspective })
+
+        CodebaseApi.Summary { perspective, ref } ->
+            let
+                hqPath hq =
+                    case hq of
+                        HQ.NameOnly fqn ->
+                            -- TODO: Not really valid...
+                            ( [ "by-name", FQN.toApiUrlString fqn ], [] )
+
+                        HQ.HashOnly h ->
+                            ( [ "by-hash", Hash.toApiUrlString h ], [] )
+
+                        HQ.HashQualified fqn h ->
+                            ( [ "by-hash", Hash.toApiUrlString h ], [ string "name" (FQN.toApiUrlString fqn) ] )
+
+                ( path, query ) =
+                    case ref of
+                        Reference.TermReference hq ->
+                            let
+                                ( p, q ) =
+                                    hqPath hq
+                            in
+                            ( [ "definitions", "terms" ] ++ p ++ [ "summary" ], q )
+
+                        Reference.TypeReference hq ->
+                            let
+                                ( p, q ) =
+                                    hqPath hq
+                            in
+                            ( [ "definitions", "types" ] ++ p ++ [ "summary" ], q )
+
+                        Reference.AbilityConstructorReference hq ->
+                            let
+                                ( p, q ) =
+                                    hqPath hq
+                            in
+                            ( [ "definitions", "terms" ] ++ p ++ [ "summary" ], q )
+
+                        Reference.DataConstructorReference hq ->
+                            let
+                                ( p, q ) =
+                                    hqPath hq
+                            in
+                            ( [ "definitions", "terms" ] ++ p ++ [ "summary" ], q )
+            in
+            GET
+                { path = path
+                , queryParams = query ++ perspectiveToQueryParams perspective
+                }
 
 
 
