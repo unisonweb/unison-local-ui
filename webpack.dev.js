@@ -1,6 +1,7 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const postcssPresetEnv = require("postcss-preset-env");
+const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
 
 const API_URL = process.env.API_URL || "127.0.0.1:8080";
 const UI_CORE_SRC = "elm-stuff/gitdeps/github.com/unisonweb/ui-core/src";
@@ -73,12 +74,24 @@ module.exports = {
 
   plugins: [
     new HtmlWebpackPlugin({
-      favicon: "./static/favicon.ico",
       template: "./src/unisonLocal.ejs",
       inject: "body",
       publicPath: "/",
       base: "/",
       filename: path.resolve(__dirname, "dist/dev/index.html"),
+    }),
+
+    new FaviconsWebpackPlugin({
+      logo: "./src/assets/dev-favicon.svg",
+      inject: true,
+      favicons: {
+        appName: "Unison Local",
+        appDescription: "Explore, read docs about, and share Unison libraries",
+        developerName: "Unison",
+        developerURL: "https://unison-lang.org",
+        background: "#FF9BA3",
+        theme_color: "#FF9BA3",
+      },
     }),
   ],
 
