@@ -30,5 +30,76 @@
       href="<%= require('./assets/favicon.svg') %>"
     />
   </head>
-  <body></body>
+  <body>
+    <noscript>
+      <style>
+        body {
+          font-family: "Inter", sans-serif;
+          background: #fafafb; /* gray-lighten-60 */
+          color: #2d2e35; /* gray-darken-20 */
+        }
+        main {
+          width: min(39rem, calc(100vw - 8rem));
+          margin: 4rem auto 1.5rem auto;
+          background: #fff; /* gray-lighten-100 */
+          padding: 1.5rem;
+          border-radius: 0.25rem;
+          border: 1px solid #e4eaf3; /* gray-lighten-50 */
+        }
+        h1 {
+          font-size: 1.5rem;
+          font-weight: 900;
+          margin: 0;
+          padding: 0;
+        }
+        p:last-child {
+          margin-bottom: 0;
+        }
+
+        footer {
+          font-size: 0.75rem;
+          text-align: center;
+          color: #818286; /* gray-lighten-20 */
+        }
+
+        footer a {
+          color: #2d2e35; /* gray-darken-20 */
+          text-decoration: none;
+          transition: all 0.2s;
+        }
+
+        footer a:hover {
+          color: #225ebe; /* blue-1 */
+        }
+
+        .decorative-pink {
+          color: #ff6c78; /* pink-2 */
+        }
+
+        .sep {
+          margin: 0 0.25rem;
+          color: #d1d5dc; /* gray-lighten-30 */
+        }
+      </style>
+      <main>
+        <h1>👋 Welcome to Unison <span class="decorative-pink">Local</span></h1>
+        <p>
+          We're sorry, but we require
+          <strong>JavaScript to be enabled</strong> for our app to work
+          properly.
+        </p>
+        <p>Please enable it to continue.</p>
+      </main>
+      <footer>
+        © 2022
+        <a target="_blank" href="https://www.unison-lang.org/unison-computing/"
+          >Unison Computing, PBC
+        </a>
+        <span class="sep">•</span>
+        <a target="_blank" href="https://www.unison-lang.org/learn"
+          >Language Docs</a
+        >
+      </footer>
+    </noscript>
+  </body>
 </html>
