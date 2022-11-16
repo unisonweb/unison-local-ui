@@ -512,8 +512,8 @@ appTitle click =
         )
 
 
-appHeader : Bool -> AppHeader.AppHeader Msg
-appHeader isHelpAndResourcesMenuOpen =
+appHeader : String -> Bool -> AppHeader.AppHeader Msg
+appHeader basePath isHelpAndResourcesMenuOpen =
     let
         actionMenu =
             ActionMenu.items
@@ -531,7 +531,7 @@ appHeader isHelpAndResourcesMenuOpen =
                 |> ActionMenu.view
     in
     { menuToggle = Just ToggleSidebar
-    , appTitle = appTitle (Click.Href "/")
+    , appTitle = appTitle (Click.Href basePath)
     , navigation = Nothing
     , leftSide = []
     , viewMode = ViewMode.Regular
@@ -842,7 +842,7 @@ view model =
     { title = "Unison Local"
     , body =
         [ div [ id "app" ]
-            [ AppHeader.view (appHeader model.isHelpAndResourcesMenuOpen)
+            [ AppHeader.view (appHeader model.env.basePath model.isHelpAndResourcesMenuOpen)
             , PageLayout.view page
             , viewModal model
             ]
