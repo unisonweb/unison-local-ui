@@ -181,8 +181,9 @@ toUrlString route =
                 HashOnly h ->
                     [ Hash.toUrlString h ]
 
-                HashQualified fqn h ->
-                    NEL.toList (FQN.toUrlSegments fqn) ++ [ Hash.toUrlString h ]
+                HashQualified _ h ->
+                    -- Currently not supported, since we favor the hash
+                    [ Hash.toUrlString h ]
 
         namespaceSuffix =
             ";"

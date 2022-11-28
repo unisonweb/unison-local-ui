@@ -249,21 +249,23 @@ update msg ({ env } as model) =
 
         PerspectiveLandingMsg rMsg ->
             let
-                ( perspectiveLanding, outMsg ) =
-                    PerspectiveLanding.update rMsg model.perspectiveLanding
+                ( perspectiveLanding, pCmd, outMsg ) =
+                    PerspectiveLanding.update codebaseConfig rMsg model.perspectiveLanding
 
                 model2 =
                     { model | perspectiveLanding = perspectiveLanding }
             in
             case outMsg of
                 PerspectiveLanding.OpenDefinition ref ->
+                    -- ignore pCmd, we're navigating
                     navigateToDefinition model2 ref
 
                 PerspectiveLanding.ShowFinderRequest ->
+                    -- ignore pCmd, we're showing the Finder
                     showFinder model2 Nothing
 
                 PerspectiveLanding.None ->
-                    ( model2, Cmd.none )
+                    ( model2, Cmd.map PerspectiveLandingMsg pCmd )
 
         CodebaseTreeMsg cMsg ->
             let
@@ -525,22 +527,40 @@ appHeader basePath isHelpAndResourcesMenuOpen =
                 , { icon = Icon.unisonMark, label = "Unison Website", click = Link.website }
                 , { icon = Icon.github, label = "Unison on GitHub", click = Link.github }
                 ]
-                |> ActionMenu.actionMenu ToggleHelpAndResourcesMenu "Help & Resources"
+
+        actionMenuMd =
+            actionMenu
+                |> ActionMenu.fromButton ToggleHelpAndResourcesMenu "Help & Resources"
                 |> ActionMenu.shouldBeOpen isHelpAndResourcesMenuOpen
                 |> ActionMenu.withButtonIcon Icon.questionmark
                 |> ActionMenu.view
+
+        actionMenuSm =
+            actionMenu
+                |> ActionMenu.fromIconButton ToggleHelpAndResourcesMenu Icon.questionmark
+                |> ActionMenu.shouldBeOpen isHelpAndResourcesMenuOpen
+                |> ActionMenu.view
     in
-    { menuToggle = Just ToggleSidebar
+    { menuToggle = Nothing
     , appTitle = appTitle (Click.Href basePath)
     , navigation = Nothing
     , leftSide = []
     , viewMode = ViewMode.Regular
     , rightSide =
-        [ actionMenu
-        , Button.iconThenLabel (ShowModal PushToShareModal) Icon.upload "Push to Unison Share"
-            |> Button.share
-            |> Button.small
-            |> Button.view
+        [ div [ class "min-md" ]
+            [ actionMenuMd
+            , Button.iconThenLabel (ShowModal PushToShareModal) Icon.upload "Push to Unison Share"
+                |> Button.decorativePurple
+                |> Button.small
+                |> Button.view
+            ]
+        , div [ class "max-md" ]
+            [ actionMenuSm
+            , Button.icon (ShowModal PushToShareModal) Icon.upload
+                |> Button.decorativePurple
+                |> Button.small
+                |> Button.view
+            ]
         ]
     }
 
@@ -709,7 +729,7 @@ viewPushToShareModal =
                             , text "."
                             ]
                         ]
-                    , div [ class "actions" ] [ Button.button CloseModal "Got It!" |> Button.primary |> Button.medium |> Button.view ]
+                    , div [ class "actions" ] [ Button.button CloseModal "Got It!" |> Button.emphasized |> Button.medium |> Button.view ]
                     ]
                 )
     in
