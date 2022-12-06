@@ -13,7 +13,7 @@ import Code.Perspective as Perspective exposing (Perspective(..))
 import Code.Workspace as Workspace
 import Code.Workspace.WorkspaceItems as WorkspaceItems
 import Html exposing (Html, div, h1, h2, h3, p, section, span, strong, text)
-import Html.Attributes exposing (class, classList, id, style, title)
+import Html.Attributes exposing (class, classList, id, title)
 import Http
 import Lib.HttpApi as HttpApi
 import Lib.OperatingSystem exposing (OperatingSystem(..))
