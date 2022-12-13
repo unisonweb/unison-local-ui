@@ -6,6 +6,10 @@ function install(dep) {
   return `npx elm-json install ${dep.name}@${dep.version} --yes`;
 }
 
+function npmInstall() {
+  return "npm install -C ./elm-stuff/gitdeps/github.com/unisonweb/ui-core";
+}
+
 function replaceElmGitSha(sha) {
   return fs
     .readFile("./elm-git.json")
@@ -56,7 +60,8 @@ function elmGitInstall() {
     })
     .then((deps) =>
       deps.reduce((p, d) => p.then((_) => run(install(d))), Promise.resolve())
-    );
+    )
+    .then(() => run(npmInstall()));
 
   function run(cmd) {
     return new Promise((resolve, _reject) => {

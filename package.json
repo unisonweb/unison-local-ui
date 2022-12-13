@@ -13,6 +13,7 @@
     "test": "elm-test",
     "review": "elm-review",
     "check-css-vars": "scripts/check-css-vars.mjs",
+    "postinstall": "npm run ui-core:install",
     "ui-core:install": "scripts/ui-core-install.js",
     "ui-core:update": "scripts/ui-core-update.js"
   },
