@@ -519,13 +519,13 @@ appHeader basePath isHelpAndResourcesMenuOpen =
     let
         actionMenu =
             ActionMenu.items
-                { icon = Icon.docs, label = "Docs", click = Link.docs }
-                [ { icon = Icon.upload, label = "Unison Share", click = Link.unisonShare }
-                , { icon = Icon.bug, label = "Report a Bug", click = Click.onClick (ShowModal ReportBugModal) }
-                , { icon = Icon.keyboardKey, label = "Keyboard Shortcuts", click = Click.onClick (ShowModal KeyboardShortcutsModal) }
-                , { icon = Icon.unfoldedMap, label = "Code of Conduct", click = Link.codeOfConduct }
-                , { icon = Icon.unisonMark, label = "Unison Website", click = Link.website }
-                , { icon = Icon.github, label = "Unison on GitHub", click = Link.github }
+                (ActionMenu.optionItem Icon.docs "Docs" Link.docs)
+                [ ActionMenu.optionItem Icon.upload "Unison Share" Link.unisonShare
+                , ActionMenu.optionItem Icon.bug "Report a Bug" (Click.onClick (ShowModal ReportBugModal))
+                , ActionMenu.optionItem Icon.keyboardKey "Keyboard Shortcuts" (Click.onClick (ShowModal KeyboardShortcutsModal))
+                , ActionMenu.optionItem Icon.unfoldedMap "Code of Conduct" Link.codeOfConduct
+                , ActionMenu.optionItem Icon.unisonMark "Unison Website" Link.website
+                , ActionMenu.optionItem Icon.github "Unison on GitHub" Link.github
                 ]
 
         actionMenuMd =

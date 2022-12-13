@@ -28,7 +28,7 @@ init : Flags -> Nav.Key -> Perspective -> Env
 init flags navKey perspective =
     { operatingSystem = OS.fromString flags.operatingSystem
     , basePath = flags.basePath
-    , api = HttpApi.httpApi flags.apiUrl Nothing
+    , api = HttpApi.httpApi False flags.apiUrl Nothing
     , navKey = navKey
     , perspective = perspective
     }
