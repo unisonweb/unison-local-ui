@@ -12,10 +12,10 @@
     "start": "webpack serve --mode development --port 1234 --config webpack.dev.js",
     "test": "elm-test",
     "review": "elm-review",
-    "check-css-vars": "scripts/check-css-vars.mjs",
-    "postinstall": "npm run ui-core:install",
-    "ui-core:install": "scripts/ui-core-install.js",
-    "ui-core:update": "scripts/ui-core-update.js"
+    "ui-core-check-css": "check-css-vars",
+    "ui-core-install": "ui-core-install",
+    "ui-core-update": "ui-core-update",
+    "postinstall": "ui-core-install"
   },
   "bugs": {
     "url": "https://github.com/unisonweb/codebase-ui/issues"
@@ -46,5 +46,8 @@
   },
   "engines": {
     "node": ">=12.0.0"
+  },
+  "dependencies": {
+    "@unison/ui-core-scripts": "github:unisonweb/ui-core-scripts"
   }
 }

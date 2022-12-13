@@ -15,7 +15,7 @@ Running Development Server
    (`ucm` also outputs a UI URL, but this isn't used when developing for the
    UI/running the UI from this repository).
 
-2. Make sure the latest dependencies are installed with by running `npm install` followed by `npm run ui-core:install`.
+2. Make sure the latest dependencies are installed with by running `npm install` followed by `npm run ui-core-install`.
 
 3. Start the dev server with: `API_URL="<API URL FROM UCM>" npm start`
 
@@ -36,13 +36,13 @@ Bumping [ui-core package](https://github.com/unisonweb/ui-core)
 The UI Core dependency can be updated to its latest version with this command:
 
 ```bash
-npm run ui-core:update
+npm run ui-core-update
 ```
 
 To install a specific sha:
 
 ```bash
-npm run ui-core:install -- [SOME_UI_CORE_SHA]
+npm run ui-core-install -- [SOME_UI_CORE_SHA]
 ```
 
 Community
