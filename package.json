@@ -12,7 +12,7 @@
     "start": "webpack serve --mode development --port 1234 --config webpack.dev.js",
     "test": "elm-test",
     "review": "elm-review",
-    "ui-core-check-css": "check-css-vars",
+    "ui-core-check-css": "ui-core-check-css",
     "ui-core-install": "ui-core-install",
     "ui-core-update": "ui-core-update",
     "postinstall": "ui-core-install"
