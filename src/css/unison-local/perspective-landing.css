@@ -9,32 +9,10 @@
   flex-direction: column;
   background: var(--color-perspective-landing-bg);
   color: var(--color-perspective-landing-text);
-  overflow: auto;
-  scrollbar-width: auto;
-  scrollbar-color: var(--u-color_scrollbar) var(--u-color_scrollbar-track);
 }
 
 #perspective-landing-content {
   padding-left: 1.5rem;
-  scrollbar-width: auto;
-  scrollbar-color: var(--u-color_scrollbar) var(--u-color_scrollbar-track);
-}
-
-#perspective-landing::-webkit-scrollbar,
-#perspective-landing-content::-webkit-scrollbar {
-  width: 0.5rem;
-  height: 0.5rem;
-}
-
-#perspective-landing::-webkit-scrollbar-track,
-#perspective-landing-content::-webkit-scrollbar-track {
-  background: var(--u-color_scrollbar-track);
-}
-
-#perspective-landing::-webkit-scrollbar-thumb,
-#perspective-landing-content::-webkit-scrollbar-thumb {
-  background-color: var(--u-color_scrollbar);
-  border-radius: var(--border-radius-base);
 }
 
 #perspective-landing-content h2 {
