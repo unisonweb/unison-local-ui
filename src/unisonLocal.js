@@ -1,10 +1,13 @@
 import "ui-core/css/ui.css";
 import "ui-core/css/themes/unison-light.css";
 import "ui-core/css/code.css";
-import "ui-core/UI/CopyOnClick"; // Include web components
-import "ui-core/Lib/OnClickOutside"; // Include web components
-import "ui-core/Lib/EmbedKatex"; // Include web components
-import "ui-core/Lib/MermaidDiagram"; // Include web components
+
+// Include web components
+import "ui-core/UI/CopyOnClick";
+import "ui-core/Lib/OnClickOutside";
+import "ui-core/Lib/EmbedKatex";
+import "ui-core/Lib/MermaidDiagram";
+
 import detectOs from "ui-core/Lib/detectOs";
 import preventDefaultGlobalKeyboardEvents from "ui-core/Lib/preventDefaultGlobalKeyboardEvents";
 
