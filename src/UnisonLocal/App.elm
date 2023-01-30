@@ -18,6 +18,7 @@ import Http
 import Lib.HttpApi as HttpApi
 import Lib.OperatingSystem exposing (OperatingSystem(..))
 import Lib.Util as Util
+import MermaidDiagram
 import RemoteData
 import UI
 import UI.ActionMenu as ActionMenu

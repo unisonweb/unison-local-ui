@@ -4,6 +4,7 @@ import "ui-core/css/code.css";
 import "ui-core/UI/CopyOnClick"; // Include web components
 import "ui-core/Lib/OnClickOutside"; // Include web components
 import "ui-core/Lib/EmbedKatex"; // Include web components
+import "ui-core/Lib/MermaidDiagram"; // Include web components
 import detectOs from "ui-core/Lib/detectOs";
 import preventDefaultGlobalKeyboardEvents from "ui-core/Lib/preventDefaultGlobalKeyboardEvents";
 
