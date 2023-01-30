@@ -81,14 +81,26 @@ codebaseApiEndpointToEndpoint cbEndpoint =
 
         CodebaseApi.Definition { perspective, ref } ->
             let
-                re =
-                    Maybe.withDefault Regex.never (Regex.fromString "#[d|a|](\\d+)$")
+                constructorSuffixRegex =
+                    Maybe.withDefault Regex.never (Regex.fromString "#[ad]\\d$")
 
-                stripConstructorPositionFromHash =
-                    Regex.replace re (always "")
+                withoutConstructorSuffix h =
+                    h
+                        |> Hash.toString
+                        |> Regex.replace constructorSuffixRegex (always "")
+
+                refToString r =
+                    case Reference.hashQualified r of
+                        HQ.NameOnly fqn ->
+                            FQN.toApiUrlString fqn
+
+                        HQ.HashOnly h ->
+                            withoutConstructorSuffix h
+
+                        HQ.HashQualified _ h ->
+                            withoutConstructorSuffix h
             in
-            [ Reference.toApiUrlString ref ]
-                |> List.map stripConstructorPositionFromHash
+            [ refToString ref ]
                 |> List.map (string "names")
                 |> (\names -> GET { path = [ "getDefinition" ], queryParams = names ++ perspectiveToQueryParams perspective })
 
