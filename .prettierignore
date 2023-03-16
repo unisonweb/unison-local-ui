@@ -3,3 +3,6 @@ public/bundle.js
 node_modules
 dist
 .unison
+elm-git.json
+elm.json
+review/suppressed/*.json
