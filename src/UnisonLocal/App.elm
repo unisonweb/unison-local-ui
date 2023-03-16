@@ -798,10 +798,9 @@ viewAppLoading =
     div [ id "app" ]
         [ AppHeader.view (AppHeader.appHeader (appTitle Click.Disabled))
         , PageLayout.view
-            (PageLayout.CenteredLayout
-                { content = PageContent.empty
-                , footer = PageLayout.PageFooter []
-                }
+            (PageLayout.centeredLayout
+                PageContent.empty
+                (PageLayout.PageFooter [])
             )
         ]
 
@@ -811,17 +810,16 @@ viewAppError error =
     div [ id "app" ]
         [ AppHeader.view (AppHeader.appHeader (appTitle Click.Disabled))
         , PageLayout.view
-            (PageLayout.CenteredLayout
-                { content =
-                    PageContent.oneColumn
-                        [ div [ class "app-error" ]
-                            [ Icon.view Icon.warn
-                            , p [ title (Util.httpErrorToString error) ]
-                                [ text "Unison Local could not be started." ]
-                            ]
+            (PageLayout.centeredLayout
+                (PageContent.oneColumn
+                    [ div [ class "app-error" ]
+                        [ Icon.view Icon.warn
+                        , p [ title (Util.httpErrorToString error) ]
+                            [ text "Unison Local could not be started." ]
                         ]
-                , footer = PageLayout.PageFooter []
-                }
+                    ]
+                )
+                (PageLayout.PageFooter [])
             )
         ]
 
@@ -832,32 +830,30 @@ view model =
         page =
             case model.route of
                 Route.Perspective _ ->
-                    PageLayout.SidebarLeftContentLayout
-                        { sidebar = viewMainSidebar model
-                        , sidebarToggled = model.sidebarToggled
-                        , operatingSystem = model.env.operatingSystem
-                        , content =
-                            PageContent.oneColumn
-                                [ Html.map PerspectiveLandingMsg
-                                    (PerspectiveLanding.view
-                                        model.env.perspective
-                                        model.perspectiveLanding
-                                    )
-                                ]
-                        , footer = PageLayout.PageFooter []
-                        }
+                    PageLayout.sidebarLeftContentLayout
+                        model.env.operatingSystem
+                        (viewMainSidebar model)
+                        (PageContent.oneColumn
+                            [ Html.map PerspectiveLandingMsg
+                                (PerspectiveLanding.view
+                                    model.env.perspective
+                                    model.perspectiveLanding
+                                )
+                            ]
+                        )
+                        (PageLayout.PageFooter [])
+                        |> PageLayout.withSidebarToggle model.sidebarToggled
 
                 Route.Definition _ _ ->
-                    PageLayout.SidebarEdgeToEdgeLayout
-                        { sidebar = viewMainSidebar model
-                        , sidebarToggled = model.sidebarToggled
-                        , operatingSystem = model.env.operatingSystem
-                        , content =
-                            PageContent.oneColumn
-                                [ Html.map WorkspaceMsg (Workspace.view ViewMode.Regular model.workspace)
-                                ]
-                        , footer = PageLayout.PageFooter []
-                        }
+                    PageLayout.sidebarEdgeToEdgeLayout
+                        model.env.operatingSystem
+                        (viewMainSidebar model)
+                        (PageContent.oneColumn
+                            [ Html.map WorkspaceMsg (Workspace.view ViewMode.Regular model.workspace)
+                            ]
+                        )
+                        (PageLayout.PageFooter [])
+                        |> PageLayout.withSidebarToggle model.sidebarToggled
     in
     { title = "Unison Local"
     , body =
