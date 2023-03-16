@@ -3,8 +3,8 @@ name: "pre-release"
 on:
   workflow_run:
     workflows: ["CI"]
-    branches: [ main ]
-    types: 
+    branches: [main]
+    types:
       - completed
 
 jobs:

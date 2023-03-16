@@ -1,51 +1,48 @@
-RelativeTo changing, fetching by name vs hash, indexing, and URLs
-=================================================================
+# RelativeTo changing, fetching by name vs hash, indexing, and URLs
 
-Context
--------
+## Context
 
 The UI can be relative to a specific namespace, either the top level namespace—
 this doesn't have a name, so we'll refer to it as the "codebase"— or any
-namespace on any level in the codebase graph. 
+namespace on any level in the codebase graph.
 
 This document aims to model this and it's impact on definition fetching,
 tracking, and serialization to the URL.
 
 These are the main questions and concerns that prompted this document:
 
-* When changing the `RelativeTo` namespace, what should happen to
+- When changing the `RelativeTo` namespace, what should happen to
   `OpenDefinitions` (the data structure that holds all definitions open within
   the workspace)? All names inside rendered sources would need to be
   re-rendered and the named identifier (from URL) would no longer be accurate?
   Should we re-fetch and re-render, clear out the workspace, something else?
 
-* When fetching something by name, we won't know until after its finished
-  fetching that we might already have it open by hash?  We could always check
+- When fetching something by name, we won't know until after its finished
+  fetching that we might already have it open by hash? We could always check
   open definitions by hash before fetching since we'll have the hash for
   everything, but the first request from the URL, perhaps that should be
   special cased?
 
-* How do we best index such that we can allow checking if something is fetched
+- How do we best index such that we can allow checking if something is fetched
   already by hash and also allow fetching something for the first time just by
   a name? And at the same time support name collisions that require both `Hash`
   and `FQN`? There's a difference between an `HashQualified` used to fully identify
   a `Definition` and having both a hash and a name for a thing. Do we need to
   keep track of them separately?
 
-* `HashQualified` normally operates on an `FQN` for the `NameOnly` variant, but
+- `HashQualified` normally operates on an `FQN` for the `NameOnly` variant, but
   the name of an open definition might not be a complete `FQN` as it is
   relative to a namespace, thus we have to use some very akin to
   `HashQualified`, but not it exactly. We need to keep track of what
   a definition is relative to.
 
-* What about terms vs types? Right now they are variants of a `Definition`, but
+- What about terms vs types? Right now they are variants of a `Definition`, but
   we want them to be distinct types. References should be indicative of which
   kind of definition they are referring to as it will be needed in the URL and
   we'll want to further separate rendering of terms and types (and potentially
   other things like patches, docs, tests etc.).
 
-Decision
---------
+## Decision
 
 We will add a new type: `RelativeTo`, that is used as a top level indicator of
 what the UI is honed in on; either as the full `Codebase` or for a specific
@@ -96,12 +93,12 @@ type HashQualified
     | HashOnly Hash
     | HashQualified FQN Hash
 
-type Reference 
+type Reference
   = TermReference HashQualified
   | TypeReference HashQualified
 
-type Item 
-  = TermItem Term 
+type Item
+  = TermItem Term
   | TypeItem Type
 
 type WorkspaceItem
@@ -109,8 +106,8 @@ type WorkspaceItem
   | Failure Reference Error
   | Success Reference Item
 
-type WorkspaceItems = 
-  WorkspaceItems 
+type WorkspaceItems =
+  WorkspaceItems
     { before : List WorkspaceItem
     , focus : WorkspaceItem
     , after : List WorkspaceItem
@@ -120,7 +117,7 @@ type WorkspaceItems =
 When a term or type is opened, a `WorkspaceItem` will be added to
 `WorkspaceItems` for the appropriate item type (`TermItem` or `TypeItem`) with
 a `Reference` (typically `NameOnly`). When the definition has been fetched the
-`WorkspaceItem` will be updated to include the data. 
+`WorkspaceItem` will be updated to include the data.
 Afterwards we'll de-duplicate items from `WorkspaceItems` (say we fetched by
 `HashOnly` and had previously fetched by `NameOnly` and this didn't have enough
 information to verify if a definition was previously fetched).
