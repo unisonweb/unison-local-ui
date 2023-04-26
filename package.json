@@ -30,7 +30,7 @@
     "css-loader": "^5.2.4",
     "elm": "^0.19.1-5",
     "elm-asset-webpack-loader": "^1.1.2",
-    "elm-format": "^0.8.5",
+    "elm-format": "^0.8.7",
     "elm-review": "^2.5.5",
     "elm-test": "^0.19.1-revision6",
     "elm-webpack-loader": "^8.0.0",
