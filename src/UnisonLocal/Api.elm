@@ -92,7 +92,8 @@ codebaseApiEndpointToEndpoint cbEndpoint =
                 refToString r =
                     case Reference.hashQualified r of
                         HQ.NameOnly fqn ->
-                            FQN.toApiUrlString fqn
+                            -- Using plain `toString` here because percentEncoded is added in elm/url's query param builder below
+                            fqn |> FQN.toString
 
                         HQ.HashOnly h ->
                             withoutConstructorSuffix h
