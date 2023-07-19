@@ -329,7 +329,7 @@ view model =
                     AppDocument.map ProjectBranchPageMsg (ProjectBranchPage.view projectName branchRef projectModel)
 
                 NonProjectCode _ nonProjectCodeModel ->
-                    AppDocument.map NonProjectCodePageMsg (NonProjectCodePage.view nonProjectCodeModel)
+                    AppDocument.map NonProjectCodePageMsg (NonProjectCodePage.view env nonProjectCodeModel)
 
                 NotFound ->
                     NotFoundPage.view

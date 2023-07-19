@@ -125,8 +125,8 @@ type Msg
     | WorkspaceMsg Workspace.Msg
 
 
-update : Env -> CodeBrowsingContext -> ViewMode -> CodeRoute -> Msg -> Model -> ( Model, Cmd Msg )
-update env context viewMode codeRoute msg model_ =
+update : Env -> CodeBrowsingContext -> CodeRoute -> Msg -> Model -> ( Model, Cmd Msg )
+update env context codeRoute msg model_ =
     let
         -- Always update the subPage since url/route changes often happens out
         -- of band.
@@ -305,7 +305,7 @@ update env context viewMode codeRoute msg model_ =
         ( WorkspacePage workspace, WorkspaceMsg workspaceMsg ) ->
             let
                 ( workspace_, workspaceCmd, outMsg ) =
-                    Workspace.update model.config viewMode workspaceMsg workspace
+                    Workspace.update model.config ViewMode.Regular workspaceMsg workspace
 
                 ( m, outCmd ) =
                     case outMsg of
@@ -506,8 +506,8 @@ subscriptions model =
 -- VIEW
 
 
-viewContent : ViewMode -> Perspective -> CodeContent -> PageContent Msg
-viewContent viewMode perspective content =
+viewContent : Perspective -> CodeContent -> PageContent Msg
+viewContent perspective content =
     case content of
         PerspectivePage readmeCard ->
             PageContent.oneColumn
@@ -519,7 +519,9 @@ viewContent viewMode perspective content =
                 )
 
         WorkspacePage workspace ->
-            PageContent.oneColumn [ Html.map WorkspaceMsg (Workspace.view viewMode workspace) ]
+            PageContent.oneColumn
+                [ Html.map WorkspaceMsg (Workspace.view ViewMode.Regular workspace)
+                ]
 
 
 viewSidebar : Model -> Sidebar Msg
@@ -539,11 +541,11 @@ viewSidebar model =
             { isToggled = model.sidebarToggled, toggleMsg = ToggleSidebar }
 
 
-view : Env -> (Msg -> msg) -> ViewMode -> CodeBrowsingContext -> Model -> ( PageLayout msg, Maybe (Html msg) )
-view env toMsg viewMode context model =
+view : Env -> (Msg -> msg) -> CodeBrowsingContext -> Model -> ( PageLayout msg, Maybe (Html msg) )
+view env toMsg _ model =
     let
         content =
-            PageContent.map toMsg (viewContent viewMode model.config.perspective model.content)
+            PageContent.map toMsg (viewContent model.config.perspective model.content)
 
         modal =
             case model.modal of
@@ -553,8 +555,8 @@ view env toMsg viewMode context model =
                 FinderModal fm ->
                     Just (Html.map toMsg (Html.map FinderMsg (Finder.view fm)))
     in
-    case ( model.content, viewMode ) of
-        ( PerspectivePage _, ViewMode.Regular ) ->
+    case model.content of
+        PerspectivePage _ ->
             ( PageLayout.sidebarLeftContentLayout
                 env.operatingSystem
                 (Sidebar.map toMsg (viewSidebar model))
@@ -564,7 +566,7 @@ view env toMsg viewMode context model =
             , modal
             )
 
-        ( WorkspacePage _, ViewMode.Regular ) ->
+        WorkspacePage _ ->
             ( PageLayout.sidebarLeftContentLayout
                 env.operatingSystem
                 (Sidebar.map toMsg (viewSidebar model))
@@ -574,6 +576,3 @@ view env toMsg viewMode context model =
                 |> PageLayout.withSubduedBackground
             , modal
             )
-
-        ( _, ViewMode.Presentation ) ->
-            ( PageLayout.PresentationLayout content, modal )

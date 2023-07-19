@@ -1,4 +1,11 @@
-module UnisonLocal.AppDocument exposing (AppDocument, appDocument, map, view, withModal)
+module UnisonLocal.AppDocument exposing
+    ( AppDocument
+    , appDocument
+    , map
+    , view
+    , withModal
+    , withModal_
+    )
 
 import Browser exposing (Document)
 import Html exposing (Html, div)
@@ -49,7 +56,12 @@ appDocument pageId title appHeader page =
 
 withModal : Html msg -> AppDocument msg -> AppDocument msg
 withModal modal appDoc =
-    { appDoc | modal = Just modal }
+    withModal_ (Just modal) appDoc
+
+
+withModal_ : Maybe (Html msg) -> AppDocument msg -> AppDocument msg
+withModal_ modal appDoc =
+    { appDoc | modal = modal }
 
 
 

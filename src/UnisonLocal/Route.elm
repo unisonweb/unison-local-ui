@@ -37,6 +37,8 @@ import Url.Builder exposing (relative)
 
 {-
 
+   TODO: Rewrite these docs to match new schema
+
    Routing
    =======
 
