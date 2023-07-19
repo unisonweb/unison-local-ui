@@ -203,7 +203,7 @@ projectNameParser =
 
 projectBranchParser : Parser Route
 projectBranchParser =
-    succeed ProjectBranch |. slash |. s "projects" |. slash |= projectNameParser |. slash |= branchRef |. slash |= code
+    succeed ProjectBranch |. slash |. s "projects" |. slash |= projectNameParser |. slash |= branchRef |= code
 
 
 nonProjectParser : Parser Route
@@ -249,7 +249,9 @@ fromUrl basePath url =
                 "/" ++ path
 
         parse url_ =
-            Result.withDefault Home (Parser.run toRoute url_)
+            Result.withDefault
+                (NotFound (Url.toString url))
+                (Parser.run toRoute url_)
     in
     url
         |> .path

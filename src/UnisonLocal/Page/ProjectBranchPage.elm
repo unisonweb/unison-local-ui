@@ -1,6 +1,7 @@
 module UnisonLocal.Page.ProjectBranchPage exposing (..)
 
 import Code.BranchRef exposing (BranchRef)
+import Html exposing (text)
 import UI.PageContent as PageContent
 import UI.PageLayout as PageLayout exposing (PageFooter(..))
 import UnisonLocal.AppDocument as AppDocument exposing (AppDocument)
@@ -83,7 +84,7 @@ view _ _ _ =
 
         page =
             PageLayout.centeredNarrowLayout
-                (PageContent.oneColumn [])
+                (PageContent.oneColumn [ text "project branch" ])
                 (PageFooter [])
                 |> PageLayout.withSubduedBackground
     in
