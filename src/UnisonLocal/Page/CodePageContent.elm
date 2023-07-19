@@ -28,7 +28,7 @@ import UI.Placeholder as Placeholder
 import UI.Sidebar as Sidebar exposing (Sidebar)
 import UI.Tooltip as Tooltip
 import UnisonLocal.Api as LocalApi
-import UnisonLocal.CodeBrowsingContext exposing (CodeBrowsingContext(..))
+import UnisonLocal.CodeBrowsingContext exposing (CodeBrowsingContext)
 import UnisonLocal.Env exposing (Env)
 
 

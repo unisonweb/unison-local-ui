@@ -1,8 +1,6 @@
 module UnisonLocal.Page.ProjectBranchPage exposing (..)
 
 import Code.BranchRef exposing (BranchRef)
-import Html exposing (text)
-import UI.PageContent as PageContent
 import UI.PageLayout as PageLayout exposing (PageFooter(..))
 import UnisonLocal.AppDocument as AppDocument exposing (AppDocument)
 import UnisonLocal.AppHeader as AppHeader
@@ -38,13 +36,23 @@ init env projectName branchRef codeRoute =
 
 
 type Msg
-    = NoOp
-    | CodePageMsg CodePage.Msg
+    = CodePageMsg CodePage.Msg
 
 
 update : Env -> ProjectName -> BranchRef -> Route.CodeRoute -> Msg -> Model -> ( Model, Cmd Msg )
-update _ _ _ _ _ model =
-    ( model, Cmd.none )
+update env projectName branchRef codeRoute msg model =
+    case msg of
+        CodePageMsg codePageMsg ->
+            let
+                context =
+                    CodeBrowsingContext.projectBranch projectName branchRef
+
+                ( codePage_, codePageCmd ) =
+                    CodePage.update env context codeRoute codePageMsg model.code
+            in
+            ( { model | code = codePage_ }
+            , Cmd.map CodePageMsg codePageCmd
+            )
 
 
 {-| Pass through to CodePage. Used by App when routes change
@@ -68,28 +76,29 @@ updateSubPage env projectName branchRef model codeRoute =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
+subscriptions model =
+    Sub.map CodePageMsg (CodePage.subscriptions model.code)
 
 
 
 -- VIEW
 
 
-view : ProjectName -> BranchRef -> Model -> AppDocument Msg
-view _ _ _ =
+view : Env -> ProjectName -> BranchRef -> Model -> AppDocument Msg
+view env projectName branchRef model =
     let
         appHeader =
             AppHeader.appHeader
 
-        page =
-            PageLayout.centeredNarrowLayout
-                (PageContent.oneColumn [ text "project branch" ])
-                (PageFooter [])
-                |> PageLayout.withSubduedBackground
+        ( codePage_, modal_ ) =
+            CodePage.view env
+                CodePageMsg
+                (CodeBrowsingContext.projectBranch projectName branchRef)
+                model.code
     in
     AppDocument.appDocument
         "project-branch-page"
-        "TODO Project Branch"
+        "Project"
         appHeader
-        (PageLayout.view page)
+        (PageLayout.view codePage_)
+        |> AppDocument.withModal_ modal_

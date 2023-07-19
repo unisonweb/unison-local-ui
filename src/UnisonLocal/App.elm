@@ -326,7 +326,7 @@ view model =
                     AppDocument.map HomePageMsg (HomePage.view home)
 
                 ProjectBranch projectName branchRef _ projectModel ->
-                    AppDocument.map ProjectBranchPageMsg (ProjectBranchPage.view projectName branchRef projectModel)
+                    AppDocument.map ProjectBranchPageMsg (ProjectBranchPage.view env projectName branchRef projectModel)
 
                 NonProjectCode _ nonProjectCodeModel ->
                     AppDocument.map NonProjectCodePageMsg (NonProjectCodePage.view env nonProjectCodeModel)

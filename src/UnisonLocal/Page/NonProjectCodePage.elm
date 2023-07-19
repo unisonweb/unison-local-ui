@@ -1,6 +1,5 @@
 module UnisonLocal.Page.NonProjectCodePage exposing (..)
 
-import Html exposing (text)
 import UI.PageLayout as PageLayout exposing (PageFooter(..))
 import UnisonLocal.AppDocument as AppDocument exposing (AppDocument)
 import UnisonLocal.AppHeader as AppHeader
@@ -72,8 +71,8 @@ updateSubPage env model codeRoute =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
+subscriptions model =
+    Sub.map CodePageMsg (CodePage.subscriptions model.code)
 
 
 

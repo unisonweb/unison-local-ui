@@ -19,7 +19,7 @@ import UI.KeyboardShortcut.KeyboardEvent as KeyboardEvent exposing (KeyboardEven
 import UI.PageContent as PageContent exposing (PageContent)
 import UI.PageLayout as PageLayout exposing (PageLayout)
 import UI.Sidebar as Sidebar exposing (Sidebar)
-import UI.ViewMode as ViewMode exposing (ViewMode)
+import UI.ViewMode as ViewMode
 import UnisonLocal.CodeBrowsingContext exposing (CodeBrowsingContext(..))
 import UnisonLocal.Env as Env exposing (Env)
 import UnisonLocal.Page.CodePageContent as CodePageContent
