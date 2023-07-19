@@ -1,11 +1,21 @@
+{- Right now this is just a passthrough, but it should really be used to fetch
+   the current session like on Share
+-}
+
+
 module UnisonLocal.PreApp exposing (..)
 
 import Browser
 import Browser.Navigation as Nav
-import Code.Perspective as Perspective exposing (PerspectiveParams)
-import Html
+import Html exposing (Html, div, p, text)
+import Html.Attributes exposing (class, id, title)
 import Http
+import Lib.Util as Util
+import UI.Icon as Icon
+import UI.PageContent as PageContent
+import UI.PageLayout as PageLayout
 import UnisonLocal.App as App
+import UnisonLocal.AppHeader as AppHeader
 import UnisonLocal.Env as Env exposing (Flags)
 import UnisonLocal.Route as Route exposing (Route)
 import Url exposing (Url)
@@ -21,7 +31,6 @@ type alias PreEnv =
     { flags : Flags
     , route : Route
     , navKey : Nav.Key
-    , perspectiveParams : PerspectiveParams
     }
 
 
@@ -31,26 +40,13 @@ init flags url navKey =
         route =
             Route.fromUrl flags.basePath url
 
-        preEnv =
-            { flags = flags
-            , route = route
-            , navKey = navKey
-            , perspectiveParams = Route.perspectiveParams route
-            }
+        env =
+            Env.init flags navKey
 
-        perspectiveToAppInit perspective =
-            let
-                env =
-                    Env.init preEnv.flags preEnv.navKey perspective
-
-                ( app, cmd ) =
-                    App.init env preEnv.route
-            in
-            ( Initialized app, Cmd.map AppMsg cmd )
+        ( app, cmd ) =
+            App.init env route
     in
-    preEnv.perspectiveParams
-        |> Perspective.fromParams
-        |> perspectiveToAppInit
+    ( Initialized app, Cmd.map AppMsg cmd )
 
 
 type Msg
@@ -59,8 +55,8 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        AppMsg appMsg ->
+    case ( model, msg ) of
+        ( _, AppMsg appMsg ) ->
             case model of
                 Initialized a ->
                     let
@@ -83,17 +79,48 @@ subscriptions model =
             Sub.none
 
 
+viewAppLoading : Html msg
+viewAppLoading =
+    div [ id "app" ]
+        [ AppHeader.viewBlank
+        , PageLayout.view
+            (PageLayout.centeredLayout
+                PageContent.empty
+                (PageLayout.PageFooter [])
+            )
+        ]
+
+
+viewAppError : Http.Error -> Html msg
+viewAppError error =
+    div [ id "app" ]
+        [ AppHeader.viewBlank
+        , PageLayout.view
+            (PageLayout.centeredLayout
+                (PageContent.oneColumn
+                    [ div [ class "app-error" ]
+                        [ Icon.view Icon.warn
+                        , p [ title (Util.httpErrorToString error) ]
+                            [ text "Unison Local could not be started." ]
+                        ]
+                    ]
+                )
+                (PageLayout.PageFooter [])
+            )
+        ]
+
+
 view : Model -> Browser.Document Msg
 view model =
     case model of
         Initializing _ ->
-            { title = "Loading.."
-            , body = [ App.viewAppLoading ]
+            { title = "Loading.. | Unison Local"
+            , body = [ viewAppLoading ]
             }
 
         InitializationError _ error ->
-            { title = "Application Error"
-            , body = [ App.viewAppError error ]
+            { title = "Application Error | Unison Local"
+            , body = [ viewAppError error ]
             }
 
         Initialized appModel ->

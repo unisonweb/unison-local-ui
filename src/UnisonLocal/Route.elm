@@ -1,28 +1,35 @@
 module UnisonLocal.Route exposing
-    ( Route(..)
+    ( CodeRoute(..)
+    , Route(..)
+    , codeRoot
+    , definition
     , fromUrl
+    , home
     , navigate
-    , navigateToCurrentPerspective
-    , navigateToDefinition
-    , navigateToLatestCodebase
-    , navigateToPerspective
-    , perspectiveParams
+    , nonProjectCode
+    , nonProjectCodeRoot
+    , nonProjectDefinition
+    , projectBranch
+    , projectBranchDefinition
+    , projectBranchRoot
     , replacePerspective
-    , toDefinition
     , toRoute
     , toUrlString
-    , updatePerspectiveParams
     )
 
 import Browser.Navigation as Nav
+import Code.BranchRef as BranchRef exposing (BranchRef)
 import Code.Definition.Reference exposing (Reference(..))
 import Code.FullyQualifiedName as FQN
 import Code.Hash as Hash
 import Code.HashQualified exposing (HashQualified(..))
-import Code.Perspective as Perspective exposing (PerspectiveParams(..))
-import Code.UrlParsers as UP exposing (b, reference, slash)
+import Code.Perspective as Perspective exposing (Perspective, PerspectiveParams(..))
+import Code.Project.ProjectSlug as ProjectSlug
+import Code.UrlParsers as UP exposing (b, branchRef, projectSlug, reference, s, slash, userHandle)
+import Lib.UserHandle as UserHandle
 import List.Nonempty as NEL
 import Parser exposing ((|.), (|=), Parser, end, oneOf, succeed)
+import UnisonLocal.Project exposing (ProjectName(..))
 import Url exposing (Url)
 import Url.Builder exposing (relative)
 
@@ -47,7 +54,7 @@ import Url.Builder exposing (relative)
    Relative examples
    -----------------
 
-   Top level of a Codebase:                       /
+   Top level of a Codebase:                     /
    Top level of a Codebase:                     /latest
    With namespace context:                      /latest/namespaces/base/List
    Definitions:                                 /latest/[types|terms]/base/List/map
@@ -71,38 +78,142 @@ import Url.Builder exposing (relative)
 -}
 
 
-type Route
-    = Perspective PerspectiveParams
+type CodeRoute
+    = CodeRoot PerspectiveParams
     | Definition PerspectiveParams Reference
 
 
-updatePerspectiveParams : Route -> PerspectiveParams -> Route
-updatePerspectiveParams route params =
-    case route of
-        Perspective _ ->
-            Perspective params
+type Route
+    = Home
+    | ProjectBranch ProjectName BranchRef CodeRoute
+    | NonProjectCode CodeRoute
+    | NotFound String
 
-        Definition _ ref ->
-            Definition params ref
+
+
+-- CREATE ---------------------------------------------------------------------
+
+
+home : Route
+home =
+    Home
+
+
+nonProjectCode : CodeRoute -> Route
+nonProjectCode codeRoute =
+    NonProjectCode codeRoute
+
+
+nonProjectDefinition : Perspective -> Reference -> Route
+nonProjectDefinition pers ref =
+    let
+        pp =
+            Perspective.toParams pers
+    in
+    NonProjectCode (Definition pp ref)
+
+
+nonProjectCodeRoot : Perspective -> Route
+nonProjectCodeRoot pers =
+    let
+        pp =
+            Perspective.toParams pers
+    in
+    NonProjectCode (CodeRoot pp)
+
+
+projectBranch : ProjectName -> BranchRef -> CodeRoute -> Route
+projectBranch projectName branchRef_ codeRoute =
+    ProjectBranch projectName branchRef_ codeRoute
+
+
+projectBranchDefinition : ProjectName -> BranchRef -> Perspective -> Reference -> Route
+projectBranchDefinition projectName branchRef_ pers ref =
+    let
+        pp =
+            Perspective.toParams pers
+    in
+    ProjectBranch projectName branchRef_ (Definition pp ref)
+
+
+projectBranchRoot : ProjectName -> BranchRef -> Perspective -> Route
+projectBranchRoot projectName branchRef pers =
+    let
+        pp =
+            Perspective.toParams pers
+    in
+    ProjectBranch projectName branchRef (CodeRoot pp)
+
+
+definition : Perspective -> Reference -> CodeRoute
+definition pers ref =
+    Definition (Perspective.toParams pers) ref
+
+
+codeRoot : Perspective -> CodeRoute
+codeRoot pers =
+    CodeRoot (Perspective.toParams pers)
+
+
+replacePerspective : Maybe Reference -> Perspective -> CodeRoute
+replacePerspective ref pers =
+    let
+        pp =
+            Perspective.toParams pers
+    in
+    case ref of
+        Just r ->
+            Definition pp r
+
+        Nothing ->
+            CodeRoot pp
 
 
 
 -- PARSER ---------------------------------------------------------------------
 
 
-perspective : Parser Route
-perspective =
-    succeed Perspective |. slash |= UP.perspectiveParams |. end
+codeRootParser : Parser CodeRoute
+codeRootParser =
+    succeed CodeRoot |. slash |= UP.perspectiveParams |. end
 
 
-definition : Parser Route
-definition =
+definitionParser : Parser CodeRoute
+definitionParser =
     succeed Definition |. slash |= UP.perspectiveParams |. slash |= reference |. end
+
+
+code : Parser CodeRoute
+code =
+    oneOf [ b codeRootParser, b definitionParser ]
+
+
+homeParser : Parser Route
+homeParser =
+    succeed Home |. slash |. end
+
+
+projectNameParser : Parser ProjectName
+projectNameParser =
+    oneOf
+        [ b (succeed (Just >> ProjectName) |= userHandle |. slash |= projectSlug)
+        , b (succeed (ProjectName Nothing) |= projectSlug)
+        ]
+
+
+projectBranchParser : Parser Route
+projectBranchParser =
+    succeed ProjectBranch |. slash |. s "projects" |. slash |= projectNameParser |. slash |= branchRef |. slash |= code
+
+
+nonProjectParser : Parser Route
+nonProjectParser =
+    succeed NonProjectCode |. slash |. s "non-project-code" |= code
 
 
 toRoute : Parser Route
 toRoute =
-    oneOf [ b perspective, b definition ]
+    oneOf [ b homeParser, b projectBranchParser, b nonProjectParser ]
 
 
 {-| In environments like Unison Local, the UI is served with a base path
@@ -138,7 +249,7 @@ fromUrl basePath url =
                 "/" ++ path
 
         parse url_ =
-            Result.withDefault (Perspective (ByRoot Perspective.Relative)) (Parser.run toRoute url_)
+            Result.withDefault Home (Parser.run toRoute url_)
     in
     url
         |> .path
@@ -148,26 +259,7 @@ fromUrl basePath url =
 
 
 
--- HELPERS --------------------------------------------------------------------
-
-
-perspectiveParams : Route -> PerspectiveParams
-perspectiveParams route =
-    case route of
-        Perspective nsRef ->
-            nsRef
-
-        Definition nsRef _ ->
-            nsRef
-
-
-
 -- TRANSFORM
-
-
-toDefinition : Route -> Reference -> Route
-toDefinition oldRoute ref =
-    Definition (perspectiveParams oldRoute) ref
 
 
 toUrlString : Route -> String
@@ -216,9 +308,9 @@ toUrlString route =
                     else
                         Hash.toUrlString hash :: "namespaces" :: NEL.toList (FQN.segments fqn)
 
-        path =
-            case route of
-                Perspective pp ->
+        codeRouteToPath cr =
+            case cr of
+                CodeRoot pp ->
                     perspectiveParamsToPath pp False
 
                 Definition pp ref ->
@@ -234,6 +326,28 @@ toUrlString route =
 
                         DataConstructorReference hq ->
                             perspectiveParamsToPath pp True ++ ("data-constructors" :: hqToPath hq)
+
+        projectNameToPath (ProjectName handle slug) =
+            case handle of
+                Just h ->
+                    [ UserHandle.toString h, ProjectSlug.toString slug ]
+
+                Nothing ->
+                    [ ProjectSlug.toString slug ]
+
+        path =
+            case route of
+                Home ->
+                    []
+
+                ProjectBranch name branchRef cr ->
+                    "projects" :: projectNameToPath name ++ BranchRef.toUrlPath branchRef ++ codeRouteToPath cr
+
+                NonProjectCode cr ->
+                    "non-project-code" :: codeRouteToPath cr
+
+                NotFound _ ->
+                    []
     in
     relative path []
 
@@ -247,37 +361,3 @@ navigate navKey route =
     route
         |> toUrlString
         |> Nav.pushUrl navKey
-
-
-navigateToPerspective : Nav.Key -> PerspectiveParams -> Cmd msg
-navigateToPerspective navKey perspectiveParams_ =
-    navigate navKey (Perspective perspectiveParams_)
-
-
-navigateToCurrentPerspective : Nav.Key -> Route -> Cmd msg
-navigateToCurrentPerspective navKey oldRoute =
-    navigateToPerspective navKey (perspectiveParams oldRoute)
-
-
-navigateToLatestCodebase : Nav.Key -> Cmd msg
-navigateToLatestCodebase navKey =
-    navigateToPerspective navKey (ByRoot Perspective.Relative)
-
-
-navigateToDefinition : Nav.Key -> Route -> Reference -> Cmd msg
-navigateToDefinition navKey currentRoute reference =
-    navigate navKey (toDefinition currentRoute reference)
-
-
-replacePerspective : Nav.Key -> PerspectiveParams -> Route -> Cmd msg
-replacePerspective navKey perspectiveParams_ oldRoute =
-    let
-        newRoute =
-            case oldRoute of
-                Perspective _ ->
-                    Perspective perspectiveParams_
-
-                Definition _ ref ->
-                    Definition perspectiveParams_ ref
-    in
-    navigate navKey newRoute
