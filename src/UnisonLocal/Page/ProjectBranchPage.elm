@@ -1,13 +1,16 @@
 module UnisonLocal.Page.ProjectBranchPage exposing (..)
 
-import Code.BranchRef exposing (BranchRef)
+import Code.BranchRef as BranchRef exposing (BranchRef)
+import Html exposing (div, text)
+import Html.Attributes exposing (class)
+import UI.Icon as Icon
 import UI.PageLayout as PageLayout exposing (PageFooter(..))
 import UnisonLocal.AppDocument as AppDocument exposing (AppDocument)
 import UnisonLocal.AppHeader as AppHeader
 import UnisonLocal.CodeBrowsingContext as CodeBrowsingContext
 import UnisonLocal.Env exposing (Env)
 import UnisonLocal.Page.CodePage as CodePage
-import UnisonLocal.Project exposing (ProjectName)
+import UnisonLocal.ProjectName as ProjectName exposing (ProjectName)
 import UnisonLocal.Route as Route
 
 
@@ -89,6 +92,10 @@ view env projectName branchRef model =
     let
         appHeader =
             AppHeader.appHeader
+                |> AppHeader.withLeftSide
+                    [ div [ class "item" ] [ Icon.view Icon.pencilRuler, text (ProjectName.toString projectName) ]
+                    , div [ class "item" ] [ Icon.view Icon.branch, text (BranchRef.toString branchRef) ]
+                    ]
 
         ( codePage_, modal_ ) =
             CodePage.view env

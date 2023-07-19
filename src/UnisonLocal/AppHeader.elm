@@ -12,7 +12,7 @@ import UnisonLocal.Link as Link
 type AppHeader msg
     = Disabled
     | AppHeader
-        { menuToggleMsg : Maybe msg
+        { leftSide : List (Html msg)
         }
 
 
@@ -36,9 +36,9 @@ map toMsgB appHeader_ =
         Disabled ->
             Disabled
 
-        AppHeader { menuToggleMsg } ->
+        AppHeader ah ->
             AppHeader
-                { menuToggleMsg = Maybe.map toMsgB menuToggleMsg
+                { leftSide = List.map (Html.map toMsgB) ah.leftSide
                 }
 
 
@@ -46,14 +46,14 @@ map toMsgB appHeader_ =
 -- MODIFY
 
 
-withMenuToggle : msg -> AppHeader msg -> AppHeader msg
-withMenuToggle menuToggleMsg appHeader_ =
+withLeftSide : List (Html msg) -> AppHeader msg -> AppHeader msg
+withLeftSide leftSide appHeader_ =
     case appHeader_ of
         Disabled ->
-            Disabled
+            AppHeader { leftSide = leftSide }
 
-        AppHeader a ->
-            AppHeader { a | menuToggleMsg = Just menuToggleMsg }
+        AppHeader ah ->
+            AppHeader { ah | leftSide = leftSide }
 
 
 
@@ -95,7 +95,7 @@ view ctx appHeader_ =
         Disabled ->
             viewBlank
 
-        AppHeader { menuToggleMsg } ->
+        AppHeader { leftSide } ->
             let
                 helpAndResources =
                     ActionMenu.items
@@ -114,7 +114,7 @@ view ctx appHeader_ =
                         |> (\hr -> div [ class "help-and-resources" ] [ hr ])
             in
             UI.AppHeader.appHeader (appTitle (Click.href "/"))
-                |> UI.AppHeader.withMenuToggle_ menuToggleMsg
+                |> UI.AppHeader.withLeftSide leftSide
                 |> UI.AppHeader.withRightSide [ helpAndResources ]
                 |> UI.AppHeader.view
 

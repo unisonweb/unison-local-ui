@@ -6,6 +6,26 @@
   grid-template-areas: "app-header" "page-layout";
 }
 
+#app-header .left-side {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  align-items: center;
+  font-size: var(--font-size-medium);
+  color: var(--u-color_text_very-subdued);
+}
+
+#app-header .left-side .item {
+  display: flex;
+  flex-direction: row;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+#app-header .left-side .item .icon {
+  color: var(--u-color_icon);
+}
+
 /* -- App Error ------------------------------------------------------------ */
 
 .app-error {
@@ -82,4 +102,3 @@
 @import "./unison-local/help-modal.css";
 @import "./unison-local/push-to-share-modal.css";
 @import "./unison-local/report-bug-modal.css";
-@import "./unison-local/perspective-landing.css";

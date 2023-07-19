@@ -1,7 +1,7 @@
 module UnisonLocal.CodeBrowsingContext exposing (..)
 
 import Code.BranchRef as BranchRef exposing (BranchRef)
-import UnisonLocal.Project as Project exposing (ProjectName)
+import UnisonLocal.ProjectName as ProjectName exposing (ProjectName)
 
 
 type CodeBrowsingContext
@@ -26,7 +26,7 @@ equals a b =
             True
 
         ( ProjectBranch nameA branchRefA, ProjectBranch nameB branchRefB ) ->
-            Project.nameEquals nameA nameB && BranchRef.equals branchRefA branchRefB
+            ProjectName.equals nameA nameB && BranchRef.equals branchRefA branchRefB
 
         _ ->
             False

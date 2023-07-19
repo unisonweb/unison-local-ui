@@ -17,7 +17,7 @@ import UnisonLocal.Page.HomePage as HomePage
 import UnisonLocal.Page.NonProjectCodePage as NonProjectCodePage
 import UnisonLocal.Page.NotFoundPage as NotFoundPage
 import UnisonLocal.Page.ProjectBranchPage as ProjectBranchPage
-import UnisonLocal.Project as Project exposing (ProjectName)
+import UnisonLocal.ProjectName as ProjectName exposing (ProjectName)
 import UnisonLocal.Route as Route exposing (Route)
 import Url exposing (Url)
 
@@ -133,7 +133,7 @@ update msg ({ env } as model) =
                         Route.ProjectBranch projectName branchRef codeRoute ->
                             case model.page of
                                 ProjectBranch currentProjectName currentBranchRef _ projectModel ->
-                                    if Project.nameEquals currentProjectName projectName && BranchRef.equals currentBranchRef branchRef then
+                                    if ProjectName.equals currentProjectName projectName && BranchRef.equals currentBranchRef branchRef then
                                         let
                                             ( project, cmd ) =
                                                 ProjectBranchPage.updateSubPage model.env projectName branchRef projectModel codeRoute

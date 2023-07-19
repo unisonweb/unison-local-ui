@@ -18,7 +18,7 @@ import Lib.HttpApi exposing (Endpoint(..))
 import Maybe.Extra as MaybeE
 import Regex
 import UnisonLocal.CodeBrowsingContext exposing (CodeBrowsingContext(..))
-import UnisonLocal.Project as Project
+import UnisonLocal.ProjectName as ProjectName
 import Url.Builder exposing (QueryParameter, int, string)
 
 
@@ -168,7 +168,7 @@ baseCodePathFromContext context =
         ProjectBranch projectName branchRef ->
             let
                 name =
-                    Project.nameToApiString projectName
+                    ProjectName.toApiString projectName
             in
             case branchRef of
                 BranchRef.ReleaseBranchRef v ->

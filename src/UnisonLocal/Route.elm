@@ -29,7 +29,7 @@ import Code.UrlParsers as UP exposing (b, branchRef, projectSlug, reference, s, 
 import Lib.UserHandle as UserHandle
 import List.Nonempty as NEL
 import Parser exposing ((|.), (|=), Parser, end, oneOf, succeed)
-import UnisonLocal.Project exposing (ProjectName(..))
+import UnisonLocal.ProjectName exposing (ProjectName(..))
 import Url exposing (Url)
 import Url.Builder exposing (relative)
 

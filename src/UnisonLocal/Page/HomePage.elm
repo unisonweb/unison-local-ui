@@ -1,8 +1,8 @@
 module UnisonLocal.Page.HomePage exposing (..)
 
-import Html exposing (text)
 import UI.PageContent as PageContent
 import UI.PageLayout as PageLayout exposing (PageFooter(..))
+import UI.StatusBanner as StatusBanner
 import UnisonLocal.AppDocument as AppDocument exposing (AppDocument)
 import UnisonLocal.AppHeader as AppHeader
 import UnisonLocal.Env exposing (Env)
@@ -34,7 +34,10 @@ view _ =
 
         page =
             PageLayout.centeredNarrowLayout
-                (PageContent.oneColumn [ text "Home" ])
+                (PageContent.oneColumn
+                    [ StatusBanner.info "Type `ui` from within a Project in UCM to view that project."
+                    ]
+                )
                 (PageFooter [])
                 |> PageLayout.withSubduedBackground
     in
