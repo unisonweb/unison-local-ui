@@ -28,8 +28,8 @@ import UI.Placeholder as Placeholder
 import UI.Sidebar as Sidebar exposing (Sidebar)
 import UI.Tooltip as Tooltip
 import UnisonLocal.Api as LocalApi
+import UnisonLocal.AppContext exposing (AppContext)
 import UnisonLocal.CodeBrowsingContext exposing (CodeBrowsingContext)
-import UnisonLocal.Env exposing (Env)
 
 
 
@@ -37,7 +37,7 @@ import UnisonLocal.Env exposing (Env)
 
 
 fetchPerspectiveAndCodebaseTree :
-    Env
+    AppContext
     -> Config
     -> (FQN -> WebData NamespaceDetails -> msg)
     -> (CodebaseTree.Msg -> msg)
@@ -45,7 +45,7 @@ fetchPerspectiveAndCodebaseTree :
     -> Perspective
     -> { m | codebaseTree : CodebaseTree.Model }
     -> ( { m | codebaseTree : CodebaseTree.Model }, Cmd msg )
-fetchPerspectiveAndCodebaseTree env config finishedMsg codebaseTreeMsg context oldPerspective model =
+fetchPerspectiveAndCodebaseTree appContext config finishedMsg codebaseTreeMsg context oldPerspective model =
     let
         ( codebaseTree, codebaseTreeCmd ) =
             CodebaseTree.init config
@@ -53,7 +53,7 @@ fetchPerspectiveAndCodebaseTree env config finishedMsg codebaseTreeMsg context o
         fetchNamespaceDetailsCmd =
             config.perspective
                 |> fetchNamespaceDetails finishedMsg context
-                |> Maybe.map (HttpApi.perform env.api)
+                |> Maybe.map (HttpApi.perform appContext.api)
                 |> Maybe.withDefault Cmd.none
     in
     if not (Perspective.equals oldPerspective config.perspective) && Perspective.needsFetching config.perspective then

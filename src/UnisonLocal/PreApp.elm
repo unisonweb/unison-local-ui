@@ -15,19 +15,19 @@ import UI.Icon as Icon
 import UI.PageContent as PageContent
 import UI.PageLayout as PageLayout
 import UnisonLocal.App as App
+import UnisonLocal.AppContext as AppContext exposing (Flags)
 import UnisonLocal.AppHeader as AppHeader
-import UnisonLocal.Env as Env exposing (Flags)
 import UnisonLocal.Route as Route exposing (Route)
 import Url exposing (Url)
 
 
 type Model
-    = Initializing PreEnv
-    | InitializationError PreEnv Http.Error
+    = Initializing PreAppContext
+    | InitializationError PreAppContext Http.Error
     | Initialized App.Model
 
 
-type alias PreEnv =
+type alias PreAppContext =
     { flags : Flags
     , route : Route
     , navKey : Nav.Key
@@ -40,11 +40,11 @@ init flags url navKey =
         route =
             Route.fromUrl flags.basePath url
 
-        env =
-            Env.init flags navKey
+        appContext =
+            AppContext.init flags navKey
 
         ( app, cmd ) =
-            App.init env route
+            App.init appContext route
     in
     ( Initialized app, Cmd.map AppMsg cmd )
 

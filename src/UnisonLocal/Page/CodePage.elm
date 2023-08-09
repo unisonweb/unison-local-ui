@@ -20,8 +20,8 @@ import UI.PageContent as PageContent exposing (PageContent)
 import UI.PageLayout as PageLayout exposing (PageLayout)
 import UI.Sidebar as Sidebar exposing (Sidebar)
 import UI.ViewMode as ViewMode
+import UnisonLocal.AppContext as AppContext exposing (AppContext)
 import UnisonLocal.CodeBrowsingContext exposing (CodeBrowsingContext(..))
-import UnisonLocal.Env as Env exposing (Env)
 import UnisonLocal.Page.CodePageContent as CodePageContent
 import UnisonLocal.Route as Route exposing (CodeRoute(..))
 
@@ -50,11 +50,11 @@ type alias Model =
     }
 
 
-init : Env -> CodeBrowsingContext -> CodeRoute -> ( Model, Cmd Msg )
-init env context codeRoute =
+init : AppContext -> CodeBrowsingContext -> CodeRoute -> ( Model, Cmd Msg )
+init appContext context codeRoute =
     let
         config =
-            Env.toCodeConfig env context perspective
+            AppContext.toCodeConfig appContext context perspective
 
         perspective =
             case codeRoute of
@@ -88,7 +88,7 @@ init env context codeRoute =
                 |> CodePageContent.fetchNamespaceDetails
                     FetchPerspectiveNamespaceDetailsFinished
                     context
-                |> Maybe.map (HttpApi.perform env.api)
+                |> Maybe.map (HttpApi.perform appContext.api)
                 |> Maybe.withDefault Cmd.none
     in
     ( { content = content
@@ -96,7 +96,7 @@ init env context codeRoute =
       , codebaseTree = codebaseTree
       , config = config
       , modal = NoModal
-      , keyboardShortcut = KeyboardShortcut.init env.operatingSystem
+      , keyboardShortcut = KeyboardShortcut.init appContext.operatingSystem
       }
     , Cmd.batch
         [ cmd
@@ -125,8 +125,8 @@ type Msg
     | WorkspaceMsg Workspace.Msg
 
 
-update : Env -> CodeBrowsingContext -> CodeRoute -> Msg -> Model -> ( Model, Cmd Msg )
-update env context codeRoute msg model_ =
+update : AppContext -> CodeBrowsingContext -> CodeRoute -> Msg -> Model -> ( Model, Cmd Msg )
+update appContext context codeRoute msg model_ =
     let
         -- Always update the subPage since url/route changes often happens out
         -- of band.
@@ -134,7 +134,7 @@ update env context codeRoute msg model_ =
         -- like when do we need it via `update`? its supposed to be out of band
         -- right?
         ( model, cmd ) =
-            updateSubPage env context codeRoute model_
+            updateSubPage appContext context codeRoute model_
     in
     case ( model.content, msg ) of
         ( _, ShowFinderModal ) ->
@@ -179,7 +179,7 @@ update env context codeRoute msg model_ =
                     Perspective.upOneLevel model.config.perspective
 
                 navCmd =
-                    navigateToCode env context (Route.replacePerspective (routeReference codeRoute) newPerspective)
+                    navigateToCode appContext context (Route.replacePerspective (routeReference codeRoute) newPerspective)
             in
             ( model, Cmd.batch [ cmd, navCmd ] )
 
@@ -189,7 +189,7 @@ update env context codeRoute msg model_ =
                     Perspective.toNamespacePerspective model.config.perspective fqn
 
                 navCmd =
-                    navigateToCode env context (Route.replacePerspective (routeReference codeRoute) perspective)
+                    navigateToCode appContext context (Route.replacePerspective (routeReference codeRoute) perspective)
             in
             ( model, Cmd.batch [ cmd, navCmd ] )
 
@@ -213,7 +213,7 @@ update env context codeRoute msg model_ =
                 CodebaseTree.OpenDefinition ref ->
                     let
                         navCmd =
-                            navigateToCode env context (Route.definition model.config.perspective ref)
+                            navigateToCode appContext context (Route.definition model.config.perspective ref)
 
                         -- Close the sidebar when opening items on mobile
                         m_ =
@@ -239,7 +239,7 @@ update env context codeRoute msg model_ =
                                     Nothing
 
                         navCmd =
-                            navigateToCode env context (Route.replacePerspective ref perspective)
+                            navigateToCode appContext context (Route.replacePerspective ref perspective)
                     in
                     ( m, Cmd.batch [ cmd, cmd_, navCmd ] )
 
@@ -262,7 +262,7 @@ update env context codeRoute msg model_ =
                             , Cmd.batch
                                 [ cmd
                                 , Cmd.map FinderMsg fCmd
-                                , navigateToCode env context (Route.definition model.config.perspective r)
+                                , navigateToCode appContext context (Route.definition model.config.perspective r)
                                 ]
                             )
 
@@ -276,7 +276,7 @@ update env context codeRoute msg model_ =
             -- hitting 'x' on the keyboard) is re-opened as the next event
             -- happens before the route change to the newly focused item and thus
             -- the old item is re-opened.
-            keydown env model_ event
+            keydown appContext model_ event
 
         ( _, KeyboardShortcutMsg kMsg ) ->
             let
@@ -293,7 +293,7 @@ update env context codeRoute msg model_ =
                 navCmd =
                     case out of
                         ReadmeCard.OpenDefinition r ->
-                            navigateToCode env context (Route.definition model.config.perspective r)
+                            navigateToCode appContext context (Route.definition model.config.perspective r)
 
                         _ ->
                             Cmd.none
@@ -310,10 +310,10 @@ update env context codeRoute msg model_ =
                 ( m, outCmd ) =
                     case outMsg of
                         Workspace.Focused ref ->
-                            ( model, navigateToCode env context (Route.definition model.config.perspective ref) )
+                            ( model, navigateToCode appContext context (Route.definition model.config.perspective ref) )
 
                         Workspace.Emptied ->
-                            ( model, navigateToCode env context (Route.codeRoot model.config.perspective) )
+                            ( model, navigateToCode appContext context (Route.codeRoot model.config.perspective) )
 
                         Workspace.ChangePerspectiveToSubNamespace ref subFqn ->
                             let
@@ -329,7 +329,7 @@ update env context codeRoute msg model_ =
                                     in
                                     Perspective.toNamespacePerspective model.config.perspective fullFqn
                             in
-                            ( model, navigateToCode env context (Route.replacePerspective ref perspective) )
+                            ( model, navigateToCode appContext context (Route.replacePerspective ref perspective) )
 
                         Workspace.ShowFinderRequest adhocFqn ->
                             let
@@ -349,15 +349,15 @@ update env context codeRoute msg model_ =
             ( model, cmd )
 
 
-updateSubPage : Env -> CodeBrowsingContext -> CodeRoute -> Model -> ( Model, Cmd Msg )
-updateSubPage env codeBrowsingContext codeRoute model =
+updateSubPage : AppContext -> CodeBrowsingContext -> CodeRoute -> Model -> ( Model, Cmd Msg )
+updateSubPage appContext codeBrowsingContext codeRoute model =
     let
         toConfig =
-            Env.toCodeConfig env codeBrowsingContext
+            AppContext.toCodeConfig appContext codeBrowsingContext
 
         refreshSidebar newConfig m =
             CodePageContent.fetchPerspectiveAndCodebaseTree
-                env
+                appContext
                 newConfig
                 FetchPerspectiveNamespaceDetailsFinished
                 CodebaseTreeMsg
@@ -432,8 +432,8 @@ routeReference route =
             Nothing
 
 
-keydown : Env -> Model -> KeyboardEvent -> ( Model, Cmd Msg )
-keydown env model keyboardEvent =
+keydown : AppContext -> Model -> KeyboardEvent -> ( Model, Cmd Msg )
+keydown appContext model keyboardEvent =
     let
         shortcut =
             KeyboardShortcut.fromKeyboardEvent model.keyboardShortcut keyboardEvent
@@ -455,7 +455,7 @@ keydown env model keyboardEvent =
             ( { model | modal = NoModal }, Cmd.none )
 
         _ ->
-            if Finder.isShowFinderKeyboardShortcut env.operatingSystem shortcut then
+            if Finder.isShowFinderKeyboardShortcut appContext.operatingSystem shortcut then
                 let
                     ( finder, cmd ) =
                         Finder.init model.config
@@ -471,8 +471,8 @@ keydown env model keyboardEvent =
 -- EFFECTS
 
 
-navigateToCode : Env -> CodeBrowsingContext -> CodeRoute -> Cmd Msg
-navigateToCode env context codeRoute =
+navigateToCode : AppContext -> CodeBrowsingContext -> CodeRoute -> Cmd Msg
+navigateToCode appContext context codeRoute =
     let
         route_ =
             case context of
@@ -482,7 +482,7 @@ navigateToCode env context codeRoute =
                 ProjectBranch ps bs ->
                     Route.projectBranch ps bs codeRoute
     in
-    Route.navigate env.navKey route_
+    Route.navigate appContext.navKey route_
 
 
 
@@ -541,8 +541,8 @@ viewSidebar model =
             { isToggled = model.sidebarToggled, toggleMsg = ToggleSidebar }
 
 
-view : Env -> (Msg -> msg) -> CodeBrowsingContext -> Model -> ( PageLayout msg, Maybe (Html msg) )
-view env toMsg _ model =
+view : AppContext -> (Msg -> msg) -> CodeBrowsingContext -> Model -> ( PageLayout msg, Maybe (Html msg) )
+view appContext toMsg _ model =
     let
         content =
             PageContent.map toMsg (viewContent model.config.perspective model.content)
@@ -558,7 +558,7 @@ view env toMsg _ model =
     case model.content of
         PerspectivePage _ ->
             ( PageLayout.sidebarLeftContentLayout
-                env.operatingSystem
+                appContext.operatingSystem
                 (Sidebar.map toMsg (viewSidebar model))
                 content
                 (PageLayout.PageFooter [])
@@ -568,7 +568,7 @@ view env toMsg _ model =
 
         WorkspacePage _ ->
             ( PageLayout.sidebarLeftContentLayout
-                env.operatingSystem
+                appContext.operatingSystem
                 (Sidebar.map toMsg (viewSidebar model))
                 content
                 (PageLayout.PageFooter [])

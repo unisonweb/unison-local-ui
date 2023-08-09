@@ -10,9 +10,9 @@ import UI
 import UI.KeyboardShortcut as KeyboardShortcut
 import UI.KeyboardShortcut.Key as Key exposing (Key(..))
 import UI.Modal as Modal
+import UnisonLocal.AppContext exposing (AppContext)
 import UnisonLocal.AppDocument as AppDocument
 import UnisonLocal.AppHeader as AppHeader
-import UnisonLocal.Env exposing (Env)
 import UnisonLocal.Page.HomePage as HomePage
 import UnisonLocal.Page.NonProjectCodePage as NonProjectCodePage
 import UnisonLocal.Page.NotFoundPage as NotFoundPage
@@ -40,35 +40,35 @@ type AppModal
 
 type alias Model =
     { page : Page
-    , env : Env
+    , appContext : AppContext
     , openedAppHeaderMenu : AppHeader.OpenedAppHeaderMenu
     , appModal : AppModal
     }
 
 
-init : Env -> Route -> ( Model, Cmd Msg )
-init env route =
+init : AppContext -> Route -> ( Model, Cmd Msg )
+init appContext route =
     let
         ( page, cmd ) =
             case route of
                 Route.Home ->
                     let
                         ( home, homeCmd ) =
-                            HomePage.init env
+                            HomePage.init appContext
                     in
                     ( Home home, Cmd.map HomePageMsg homeCmd )
 
                 Route.ProjectBranch projectName branchRef codeRoute ->
                     let
                         ( project, projectBranchCmd ) =
-                            ProjectBranchPage.init env projectName branchRef codeRoute
+                            ProjectBranchPage.init appContext projectName branchRef codeRoute
                     in
                     ( ProjectBranch projectName branchRef codeRoute project, Cmd.map ProjectBranchPageMsg projectBranchCmd )
 
                 Route.NonProjectCode codeRoute ->
                     let
                         ( nonProjectCode, nonProjectCodeCmd ) =
-                            NonProjectCodePage.init env codeRoute
+                            NonProjectCodePage.init appContext codeRoute
                     in
                     ( NonProjectCode codeRoute nonProjectCode, Cmd.map NonProjectCodePageMsg nonProjectCodeCmd )
 
@@ -77,7 +77,7 @@ init env route =
 
         model =
             { page = page
-            , env = env
+            , appContext = appContext
             , openedAppHeaderMenu = AppHeader.NoneOpened
             , appModal = NoModal
             }
@@ -104,12 +104,12 @@ type Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg ({ env } as model) =
+update msg ({ appContext } as model) =
     case ( model.page, msg ) of
         ( _, LinkClicked urlRequest ) ->
             case urlRequest of
                 Browser.Internal url ->
-                    ( model, Nav.pushUrl env.navKey (Url.toString url) )
+                    ( model, Nav.pushUrl appContext.navKey (Url.toString url) )
 
                 -- External links are handled via target blank and never end up
                 -- here
@@ -119,14 +119,14 @@ update msg ({ env } as model) =
         ( _, UrlChanged url ) ->
             let
                 route =
-                    Route.fromUrl env.basePath url
+                    Route.fromUrl appContext.basePath url
 
                 ( m, c ) =
                     case route of
                         Route.Home ->
                             let
                                 ( home, cmd ) =
-                                    HomePage.init model.env
+                                    HomePage.init model.appContext
                             in
                             ( { model | page = Home home }, Cmd.map HomePageMsg cmd )
 
@@ -136,21 +136,21 @@ update msg ({ env } as model) =
                                     if ProjectName.equals currentProjectName projectName && BranchRef.equals currentBranchRef branchRef then
                                         let
                                             ( project, cmd ) =
-                                                ProjectBranchPage.updateSubPage model.env projectName branchRef projectModel codeRoute
+                                                ProjectBranchPage.updateSubPage model.appContext projectName branchRef projectModel codeRoute
                                         in
                                         ( { model | page = ProjectBranch projectName branchRef codeRoute project }, Cmd.map ProjectBranchPageMsg cmd )
 
                                     else
                                         let
                                             ( project, cmd ) =
-                                                ProjectBranchPage.init model.env projectName branchRef codeRoute
+                                                ProjectBranchPage.init model.appContext projectName branchRef codeRoute
                                         in
                                         ( { model | page = ProjectBranch projectName branchRef codeRoute project }, Cmd.map ProjectBranchPageMsg cmd )
 
                                 _ ->
                                     let
                                         ( project, cmd ) =
-                                            ProjectBranchPage.init model.env projectName branchRef codeRoute
+                                            ProjectBranchPage.init model.appContext projectName branchRef codeRoute
                                     in
                                     ( { model | page = ProjectBranch projectName branchRef codeRoute project }, Cmd.map ProjectBranchPageMsg cmd )
 
@@ -159,14 +159,14 @@ update msg ({ env } as model) =
                                 NonProjectCode _ npcModel ->
                                     let
                                         ( npc, cmd ) =
-                                            NonProjectCodePage.updateSubPage model.env npcModel codeRoute
+                                            NonProjectCodePage.updateSubPage model.appContext npcModel codeRoute
                                     in
                                     ( { model | page = NonProjectCode codeRoute npc }, Cmd.map NonProjectCodePageMsg cmd )
 
                                 _ ->
                                     let
                                         ( npc, cmd ) =
-                                            NonProjectCodePage.init model.env codeRoute
+                                            NonProjectCodePage.init model.appContext codeRoute
                                     in
                                     ( { model | page = NonProjectCode codeRoute npc }, Cmd.map NonProjectCodePageMsg cmd )
 
@@ -196,21 +196,21 @@ update msg ({ env } as model) =
         ( Home m, HomePageMsg cMsg ) ->
             let
                 ( home, cmd ) =
-                    HomePage.update env cMsg m
+                    HomePage.update appContext cMsg m
             in
             ( { model | page = Home home }, Cmd.map HomePageMsg cmd )
 
         ( ProjectBranch projectName branchRef codeRoute m, ProjectBranchPageMsg pMsg ) ->
             let
                 ( projectBranch, cmd ) =
-                    ProjectBranchPage.update env projectName branchRef codeRoute pMsg m
+                    ProjectBranchPage.update appContext projectName branchRef codeRoute pMsg m
             in
             ( { model | page = ProjectBranch projectName branchRef codeRoute projectBranch }, Cmd.map ProjectBranchPageMsg cmd )
 
         ( NonProjectCode codeRoute m, NonProjectCodePageMsg npcMsg ) ->
             let
                 ( nonProjectCode, cmd ) =
-                    NonProjectCodePage.update env codeRoute npcMsg m
+                    NonProjectCodePage.update appContext codeRoute npcMsg m
             in
             ( { model | page = NonProjectCode codeRoute nonProjectCode }, Cmd.map NonProjectCodePageMsg cmd )
 
@@ -311,8 +311,8 @@ viewKeyboardShortcutsModal os =
 view : Model -> Browser.Document Msg
 view model =
     let
-        env =
-            model.env
+        appContext =
+            model.appContext
 
         appHeaderContext =
             { openedAppHeaderMenu = model.openedAppHeaderMenu
@@ -326,10 +326,10 @@ view model =
                     AppDocument.map HomePageMsg (HomePage.view home)
 
                 ProjectBranch projectName branchRef _ projectModel ->
-                    AppDocument.map ProjectBranchPageMsg (ProjectBranchPage.view env projectName branchRef projectModel)
+                    AppDocument.map ProjectBranchPageMsg (ProjectBranchPage.view appContext projectName branchRef projectModel)
 
                 NonProjectCode _ nonProjectCodeModel ->
-                    AppDocument.map NonProjectCodePageMsg (NonProjectCodePage.view env nonProjectCodeModel)
+                    AppDocument.map NonProjectCodePageMsg (NonProjectCodePage.view appContext nonProjectCodeModel)
 
                 NotFound ->
                     NotFoundPage.view
@@ -341,6 +341,6 @@ view model =
                     appDocument
 
                 KeyboardShortcuts ->
-                    { appDocument | modal = Just (viewKeyboardShortcutsModal env.operatingSystem) }
+                    { appDocument | modal = Just (viewKeyboardShortcutsModal appContext.operatingSystem) }
     in
     AppDocument.view appHeaderContext appDocumentWithModal

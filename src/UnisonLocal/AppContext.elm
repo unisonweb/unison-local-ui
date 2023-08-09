@@ -1,4 +1,4 @@
-module UnisonLocal.Env exposing (..)
+module UnisonLocal.AppContext exposing (..)
 
 import Browser.Navigation as Nav
 import Code.Config
@@ -9,7 +9,7 @@ import UnisonLocal.Api as LocalApi
 import UnisonLocal.CodeBrowsingContext exposing (CodeBrowsingContext)
 
 
-type alias Env =
+type alias AppContext =
     { operatingSystem : OperatingSystem
     , basePath : String
     , api : HttpApi
@@ -24,7 +24,7 @@ type alias Flags =
     }
 
 
-init : Flags -> Nav.Key -> Env
+init : Flags -> Nav.Key -> AppContext
 init flags navKey =
     { operatingSystem = OS.fromString flags.operatingSystem
     , basePath = flags.basePath
@@ -33,10 +33,10 @@ init flags navKey =
     }
 
 
-toCodeConfig : Env -> CodeBrowsingContext -> Perspective -> Code.Config.Config
-toCodeConfig env codeBrowsingContext perspective =
-    { operatingSystem = env.operatingSystem
+toCodeConfig : AppContext -> CodeBrowsingContext -> Perspective -> Code.Config.Config
+toCodeConfig appContext codeBrowsingContext perspective =
+    { operatingSystem = appContext.operatingSystem
     , perspective = perspective
     , toApiEndpoint = LocalApi.codebaseApiEndpointToEndpoint codeBrowsingContext
-    , api = env.api
+    , api = appContext.api
     }

@@ -3,16 +3,16 @@ module UnisonLocal.Page.HomePage exposing (..)
 import UI.PageContent as PageContent
 import UI.PageLayout as PageLayout exposing (PageFooter(..))
 import UI.StatusBanner as StatusBanner
+import UnisonLocal.AppContext exposing (AppContext)
 import UnisonLocal.AppDocument as AppDocument exposing (AppDocument)
 import UnisonLocal.AppHeader as AppHeader
-import UnisonLocal.Env exposing (Env)
 
 
 type alias Model =
     ()
 
 
-init : Env -> ( Model, Cmd Msg )
+init : AppContext -> ( Model, Cmd Msg )
 init _ =
     ( (), Cmd.none )
 
@@ -21,7 +21,7 @@ type Msg
     = NoOp
 
 
-update : Env -> Msg -> Model -> ( Model, Cmd Msg )
+update : AppContext -> Msg -> Model -> ( Model, Cmd Msg )
 update _ _ model =
     ( model, Cmd.none )
 
