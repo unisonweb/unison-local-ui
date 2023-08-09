@@ -1,8 +1,4 @@
-module UnisonLocal.Api exposing
-    ( codebaseApiEndpointToEndpoint
-    , codebaseHash
-    , namespace
-    )
+module UnisonLocal.Api exposing (codebaseApiEndpointToEndpoint, namespace)
 
 import Code.BranchRef as BranchRef
 import Code.CodebaseApi as CodebaseApi
@@ -20,11 +16,6 @@ import Regex
 import UnisonLocal.CodeBrowsingContext exposing (CodeBrowsingContext(..))
 import UnisonLocal.ProjectName as ProjectName
 import Url.Builder exposing (QueryParameter, int, string)
-
-
-codebaseHash : Endpoint
-codebaseHash =
-    GET { path = [ "list" ], queryParams = [] }
 
 
 namespace : CodeBrowsingContext -> Perspective -> FQN -> Endpoint
