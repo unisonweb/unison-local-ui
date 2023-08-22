@@ -24,7 +24,7 @@
   "homepage": "https://github.com/unisonweb/codebase-ui#readme",
   "devDependencies": {
     "@octokit/core": "^4.0.5",
-    "@unison-lang/ui-core-scripts": "^1.0.2",
+    "@unison-lang/ui-core-scripts": "^1.1.9",
     "archiver": "^5.3.0",
     "copy-webpack-plugin": "^8.1.1",
     "css-loader": "^5.2.4",

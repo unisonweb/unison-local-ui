@@ -54,18 +54,41 @@ fromString raw =
             Nothing
 
 
+{-| !!! Don't use outside of of testing
+-}
+unsafeFromString : String -> ProjectName
+unsafeFromString raw =
+    let
+        parts =
+            String.split "/" raw
+    in
+    case parts of
+        [ h, s ] ->
+            ProjectName (h |> UserHandle.unsafeFromString |> Just) (ProjectSlug.unsafeFromString s)
+
+        [ s ] ->
+            ProjectName Nothing (ProjectSlug.unsafeFromString s)
+
+        _ ->
+            ProjectName Nothing (ProjectSlug.unsafeFromString raw)
+
+
 
 -- HELPERS
 
 
 equals : ProjectName -> ProjectName -> Bool
 equals (ProjectName handleA slugA) (ProjectName handleB slugB) =
-    let
-        handleEquals =
-            Maybe.map2 UserHandle.equals handleA handleB
-                |> Maybe.withDefault False
-    in
-    handleEquals && ProjectSlug.equals slugA slugB
+    case ( handleA, handleB ) of
+        ( Just ha, Just hb ) ->
+            UserHandle.equals ha hb && ProjectSlug.equals slugA slugB
+
+        ( Nothing, Nothing ) ->
+            -- if there are no handles, we only care about ProjectSlug equality
+            ProjectSlug.equals slugA slugB
+
+        _ ->
+            False
 
 
 toString : ProjectName -> String
