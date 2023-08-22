@@ -6,6 +6,7 @@ import UI.ActionMenu as ActionMenu
 import UI.AppHeader exposing (AppHeader, AppTitle(..))
 import UI.Click as Click exposing (Click)
 import UI.Icon as Icon
+import UI.Sizing as Sizing
 import UnisonLocal.Link as Link
 
 
@@ -109,7 +110,7 @@ view ctx appHeader_ =
                         |> ActionMenu.fromButton ctx.toggleHelpAndResourcesMenuMsg "Help & Resources"
                         |> ActionMenu.shouldBeOpen (isHelpAndResourcesMenuOpen ctx.openedAppHeaderMenu)
                         |> ActionMenu.withButtonIcon Icon.questionmark
-                        |> ActionMenu.withMaxWidth (ActionMenu.Rem 12)
+                        |> ActionMenu.withMaxWidth (Sizing.Rem 12)
                         |> ActionMenu.view
                         |> (\hr -> div [ class "help-and-resources" ] [ hr ])
             in
