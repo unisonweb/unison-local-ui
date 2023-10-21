@@ -4,6 +4,7 @@ import "ui-core/css/code.css";
 
 // Include web components
 import "ui-core/UI/CopyOnClick";
+import "ui-core/UI/CopyrightYear";
 import "ui-core/Lib/OnClickOutside";
 import "ui-core/Lib/EmbedKatex";
 import "ui-core/Lib/MermaidDiagram";
