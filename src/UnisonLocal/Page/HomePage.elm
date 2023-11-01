@@ -2,9 +2,9 @@ module UnisonLocal.Page.HomePage exposing (..)
 
 import Code.BranchRef as BranchRef exposing (BranchSlug(..))
 import Code.Perspective as Perspective
-import Html exposing (li, p, text, ul)
+import Dict exposing (Dict)
+import Html exposing (Html, div, h2, p, text)
 import Json.Decode as Decode
-import Json.Decode.Pipeline exposing (required)
 import Lib.HttpApi as HttpApi
 import Lib.Util as Util
 import RemoteData exposing (RemoteData(..), WebData)
@@ -12,6 +12,7 @@ import UI.Click as Click
 import UI.PageContent as PageContent
 import UI.PageLayout as PageLayout exposing (PageFooter(..))
 import UI.PageTitle as PageTitle
+import UI.Tag as Tag
 import UnisonLocal.Api as LocalApi
 import UnisonLocal.AppContext exposing (AppContext)
 import UnisonLocal.AppDocument as AppDocument exposing (AppDocument)
@@ -20,116 +21,163 @@ import UnisonLocal.ProjectName as ProjectName exposing (ProjectName)
 import UnisonLocal.Route as Route
 
 
+
+-- MODEL
+
+
 type alias Model =
-    { projects : List ProjectWithBranches }
+    { projects : Projects }
 
 
-type alias ProjectWithBranches =
-    { projectName : ProjectName
-    , branches : List { branchName : BranchSlug }
-    }
+type alias Projects =
+    -- Since a `Dict` requires a key of type `comparable`
+    -- `ProjectName` is made available in the value
+    -- for further processing
+    Dict String ( ProjectName, List BranchSlug )
 
 
 init : AppContext -> ( Model, Cmd Msg )
 init appContext =
-    let
-        fetchProjectsCmd =
-            fetchProjects FetchProjectsFinished
-                |> HttpApi.perform appContext.api
-    in
-    ( { projects = [] }
-    , fetchProjectsCmd
+    ( { projects = Dict.empty }
+    , fetchProjects FetchProjectsFinished
+        |> HttpApi.perform appContext.api
     )
 
 
+
+-- UPDATE
+
+
+type Msg
+    = FetchProjectsFinished (WebData (List ProjectName))
+    | FetchProjectBranchesFinished (WebData ( ProjectName, List BranchSlug ))
+
+
+update : AppContext -> Msg -> Model -> ( Model, Cmd Msg )
+update appContext msg model =
+    case msg of
+        FetchProjectsFinished (Success projectNames) ->
+            ( { projects =
+                    projectNames
+                        |> List.map
+                            (\p ->
+                                ( ProjectName.toString p
+                                , ( p, [] )
+                                )
+                            )
+                        |> Dict.fromList
+              }
+            , projectNames
+                |> List.map
+                    (fetchProjectBranches FetchProjectBranchesFinished
+                        >> HttpApi.perform appContext.api
+                    )
+                |> Cmd.batch
+            )
+
+        FetchProjectBranchesFinished (Success ( projectName, branches )) ->
+            ( { model
+                | projects =
+                    model.projects
+                        |> Dict.insert
+                            (ProjectName.toString projectName)
+                            ( projectName, branches )
+              }
+            , Cmd.none
+            )
+
+        _ ->
+            ( model, Cmd.none )
+
+
+
+-- EFFECTS
+
+
 fetchProjects :
-    (WebData (List { projectName : ProjectName }) -> msg)
-    -> HttpApi.ApiRequest (List { projectName : ProjectName }) msg
+    (WebData (List ProjectName) -> msg)
+    -> HttpApi.ApiRequest (List ProjectName) msg
 fetchProjects finishedMsg =
     LocalApi.projects
         |> HttpApi.toRequest decodeProjectList (RemoteData.fromResult >> finishedMsg)
 
 
 fetchProjectBranches :
-    (WebData (List { branchName : BranchSlug }) -> msg)
+    (WebData ( ProjectName, List BranchSlug ) -> msg)
     -> ProjectName
-    -> HttpApi.ApiRequest (List { branchName : BranchSlug }) msg
+    -> HttpApi.ApiRequest ( ProjectName, List BranchSlug ) msg
 fetchProjectBranches finishedMsg projectName =
-    LocalApi.projectBranches projectName
-        |> HttpApi.toRequest decodeBranchList (RemoteData.fromResult >> finishedMsg)
-
-
-decodeProjectList : Decode.Decoder (List { projectName : ProjectName })
-decodeProjectList =
     let
-        makeProjectName projectName =
-            { projectName = projectName }
+        decodeWithProjectName =
+            decodeBranchList
+                |> Decode.map (Tuple.pair projectName)
     in
-    Decode.succeed makeProjectName
-        |> required "projectName" ProjectName.decode
-        |> Decode.list
+    LocalApi.projectBranches projectName
+        |> HttpApi.toRequest decodeWithProjectName (RemoteData.fromResult >> finishedMsg)
 
 
-decodeBranchList : Decode.Decoder (List { branchName : BranchSlug })
+
+-- DECODE
+
+
+decodeProjectList : Decode.Decoder (List ProjectName)
+decodeProjectList =
+    Decode.list <|
+        Decode.field "projectName" ProjectName.decode
+
+
+decodeBranchList : Decode.Decoder (List BranchSlug)
 decodeBranchList =
     let
-        makeBranchName branchName =
-            { branchName = branchName }
+        branchSlugDecode =
+            Decode.map BranchRef.branchSlugFromString Decode.string
+                |> Decode.andThen (Util.decodeFailInvalid "Invalid BranchName")
     in
-    Decode.succeed makeBranchName
-        |> required "branchName" branchSlugDecode
-        |> Decode.list
+    Decode.list <|
+        Decode.field "branchName" branchSlugDecode
 
 
-branchSlugDecode : Decode.Decoder BranchSlug
-branchSlugDecode =
-    Decode.map BranchRef.branchSlugFromString Decode.string
-        |> Decode.andThen (Util.decodeFailInvalid "Invalid BranchName")
+
+-- VIEW
 
 
-type Msg
-    = FetchProjectsFinished (WebData (List { projectName : ProjectName }))
-    | FetchProjectBranchesFinished ProjectName (WebData (List { branchName : BranchSlug }))
+viewProjectList : Projects -> List (Html Msg)
+viewProjectList projects =
+    let
+        branchTag projectName branchName =
+            BranchRef.projectBranchRef branchName
+                |> (\branchRef ->
+                        BranchRef.toTag branchRef
+                            |> Tag.withClick
+                                (Route.projectBranchRoot projectName branchRef Perspective.relativeRootPerspective
+                                    |> Route.toUrlString
+                                    |> Click.href
+                                )
+                   )
+                |> Tag.view
 
+        branchList projectName branches =
+            case branches of
+                [] ->
+                    [ text "No branches" ]
 
-update : AppContext -> Msg -> Model -> ( Model, Cmd Msg )
-update appContext msg model =
-    case msg of
-        FetchProjectsFinished (Success projects) ->
-            ( { projects =
-                    projects
-                        |> List.map (\{ projectName } -> ProjectWithBranches projectName [])
-              }
-            , let
-                fetchProjectBranchesCmd projectName =
-                    fetchProjectBranches (FetchProjectBranchesFinished projectName) projectName
-                        |> HttpApi.perform appContext.api
-              in
-              projects
-                |> List.map (\{ projectName } -> fetchProjectBranchesCmd projectName)
-                |> Cmd.batch
+                branchNames ->
+                    branchNames
+                        |> List.map (branchTag projectName)
+                        |> List.intersperse (text " ")
+
+        projectItem projectName branches =
+            div []
+                [ h2 [] [ text <| ProjectName.toString projectName ]
+                , p [] (branchList projectName branches)
+                ]
+    in
+    projects
+        |> Dict.toList
+        |> List.map
+            (\( _, ( projectName, branches ) ) ->
+                projectItem projectName branches
             )
-
-        FetchProjectsFinished _ ->
-            ( model, Cmd.none )
-
-        FetchProjectBranchesFinished projectName (Success branches) ->
-            ( { projects =
-                    model.projects
-                        |> List.map
-                            (\project ->
-                                if project.projectName == projectName then
-                                    ProjectWithBranches project.projectName branches
-
-                                else
-                                    project
-                            )
-              }
-            , Cmd.none
-            )
-
-        FetchProjectBranchesFinished _ _ ->
-            ( model, Cmd.none )
 
 
 view : Model -> AppDocument Msg
@@ -137,23 +185,6 @@ view { projects } =
     let
         appHeader =
             AppHeader.appHeader
-
-        projectList =
-            projects
-                |> List.map
-                    (\{ projectName, branches } ->
-                        let
-                            defaultBranch =
-                                List.head branches
-                                    |> Maybe.map (\{ branchName } -> branchName)
-                                    |> Maybe.withDefault (BranchSlug "main")
-                        in
-                        li []
-                            [ Click.href
-                                (String.join "/" [ "/projects", ProjectName.toString projectName, BranchRef.branchSlugToString defaultBranch ++ "/" ])
-                                |> Click.view [] [ text <| ProjectName.toString projectName ]
-                            ]
-                    )
 
         nonProjectCodeParagraph =
             p []
@@ -168,10 +199,10 @@ view { projects } =
         page =
             PageLayout.centeredNarrowLayout
                 (PageContent.oneColumn
-                    [ ul [] projectList
-                    , nonProjectCodeParagraph
-                    ]
-                    |> PageContent.withPageTitle (PageTitle.title "Open a project")
+                    (viewProjectList projects
+                        ++ [ nonProjectCodeParagraph ]
+                    )
+                    |> PageContent.withPageTitle (PageTitle.title "Open a project branch")
                 )
                 (PageFooter [])
                 |> PageLayout.withSubduedBackground
