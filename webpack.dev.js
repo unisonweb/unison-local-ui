@@ -4,6 +4,7 @@ const postcssPresetEnv = require("postcss-preset-env");
 const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
 
 const API_URL = process.env.API_URL || "127.0.0.1:8080";
+const ELM_DEBUG = process.env.ELM_DEBUG || false;
 const UI_CORE_SRC = "elm-stuff/gitdeps/github.com/unisonweb/ui-core/src";
 
 module.exports = {
@@ -63,7 +64,7 @@ module.exports = {
           {
             loader: "elm-webpack-loader",
             options: {
-              debug: false,
+              debug: ELM_DEBUG,
               cwd: __dirname,
             },
           },

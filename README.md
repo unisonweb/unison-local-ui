@@ -19,6 +19,8 @@ This is the UI you see when you type `ui` into `ucm`.
 
 4. Visit `http://localhost:1234` in a browser.
 
+> 💡 Set the environment variable `ELM_DEBUG=1` before starting the dev server to enable Elm's time-travelling debugger.
+
 ## Dependencies
 
 This depends on the [ui-core package](https://github.com/unisonweb/ui-core) via
