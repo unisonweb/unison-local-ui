@@ -183,22 +183,10 @@ view { projects } =
         appHeader =
             AppHeader.appHeader
 
-        nonProjectCodeParagraph =
-            p []
-                [ text "or "
-                , Route.nonProjectCodeRoot Perspective.relativeRootPerspective
-                    |> Route.toUrlString
-                    |> Click.href
-                    |> Click.view [] [ text "view all non-project code" ]
-                , text "."
-                ]
-
         page =
             PageLayout.centeredNarrowLayout
                 (PageContent.oneColumn
-                    (viewProjectList projects
-                        ++ [ nonProjectCodeParagraph ]
-                    )
+                    (viewProjectList projects)
                     |> PageContent.withPageTitle (PageTitle.title "Open a project branch")
                 )
                 (PageFooter [])
