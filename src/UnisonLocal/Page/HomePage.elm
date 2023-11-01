@@ -39,7 +39,7 @@ type alias Projects =
 init : AppContext -> ( Model, Cmd Msg )
 init appContext =
     ( { projects = Dict.empty }
-    , fetchProjects FetchProjectsFinished
+    , fetchProjects
         |> HttpApi.perform appContext.api
     )
 
@@ -69,7 +69,7 @@ update appContext msg model =
               }
             , projectNames
                 |> List.map
-                    (fetchProjectBranches FetchProjectBranchesFinished
+                    (fetchProjectBranches
                         >> HttpApi.perform appContext.api
                     )
                 |> Cmd.batch
@@ -94,26 +94,23 @@ update appContext msg model =
 -- EFFECTS
 
 
-fetchProjects :
-    (WebData (List ProjectName) -> msg)
-    -> HttpApi.ApiRequest (List ProjectName) msg
-fetchProjects finishedMsg =
+fetchProjects : HttpApi.ApiRequest (List ProjectName) Msg
+fetchProjects =
     LocalApi.projects
-        |> HttpApi.toRequest decodeProjectList (RemoteData.fromResult >> finishedMsg)
+        |> HttpApi.toRequest decodeProjectList (RemoteData.fromResult >> FetchProjectsFinished)
 
 
 fetchProjectBranches :
-    (WebData ( ProjectName, List BranchSlug ) -> msg)
-    -> ProjectName
-    -> HttpApi.ApiRequest ( ProjectName, List BranchSlug ) msg
-fetchProjectBranches finishedMsg projectName =
+    ProjectName
+    -> HttpApi.ApiRequest ( ProjectName, List BranchSlug ) Msg
+fetchProjectBranches projectName =
     let
         decodeWithProjectName =
             decodeBranchList
                 |> Decode.map (Tuple.pair projectName)
     in
     LocalApi.projectBranches projectName
-        |> HttpApi.toRequest decodeWithProjectName (RemoteData.fromResult >> finishedMsg)
+        |> HttpApi.toRequest decodeWithProjectName (RemoteData.fromResult >> FetchProjectBranchesFinished)
 
 
 
