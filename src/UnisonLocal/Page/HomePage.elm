@@ -1,14 +1,12 @@
 module UnisonLocal.Page.HomePage exposing (..)
 
 import Code.BranchRef as BranchRef exposing (BranchSlug(..))
-import Code.Perspective as Perspective
 import Dict exposing (Dict)
 import Html exposing (Html, div, h2, p, text)
 import Json.Decode as Decode
 import Lib.HttpApi as HttpApi
 import Lib.Util as Util
 import RemoteData exposing (RemoteData(..), WebData)
-import UI.Click as Click
 import UI.PageContent as PageContent
 import UI.PageLayout as PageLayout exposing (PageFooter(..))
 import UI.PageTitle as PageTitle
@@ -17,8 +15,8 @@ import UnisonLocal.Api as LocalApi
 import UnisonLocal.AppContext exposing (AppContext)
 import UnisonLocal.AppDocument as AppDocument exposing (AppDocument)
 import UnisonLocal.AppHeader as AppHeader
+import UnisonLocal.Link as Link
 import UnisonLocal.ProjectName as ProjectName exposing (ProjectName)
-import UnisonLocal.Route as Route
 
 
 
@@ -142,15 +140,16 @@ viewProjectList : Projects -> List (Html Msg)
 viewProjectList projects =
     let
         branchTag projectName branchName =
-            BranchRef.projectBranchRef branchName
-                |> (\branchRef ->
-                        BranchRef.toTag branchRef
-                            |> Tag.withClick
-                                (Route.projectBranchRoot projectName branchRef Perspective.relativeRootPerspective
-                                    |> Route.toUrlString
-                                    |> Click.href
-                                )
-                   )
+            let
+                branchRef =
+                    BranchRef.projectBranchRef branchName
+
+                branchRootLink =
+                    Link.projectBranchRoot projectName branchRef
+            in
+            branchRef
+                |> BranchRef.toTag
+                |> Tag.withClick branchRootLink
                 |> Tag.view
 
         branchList projectName branches =
