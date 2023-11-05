@@ -1,7 +1,11 @@
 module UnisonLocal.Link exposing (..)
 
+import Code.BranchRef exposing (BranchRef)
+import Code.Perspective as Perspective
 import Html exposing (Html, text)
 import UI.Click as Click exposing (Click)
+import UnisonLocal.ProjectName exposing (ProjectName)
+import UnisonLocal.Route as Route exposing (Route)
 
 
 
@@ -13,6 +17,25 @@ import UI.Click as Click exposing (Click)
    Various UI.Click link helpers for Routes and external links
 
 -}
+-- ROUTES
+
+
+projectBranchRoot : ProjectName -> BranchRef -> Click msg
+projectBranchRoot projectName branchRef =
+    let
+        pers =
+            Perspective.relativeRootPerspective
+    in
+    Route.projectBranchRoot projectName branchRef pers
+        |> toClick
+
+
+toClick : Route -> Click msg
+toClick =
+    Route.toUrlString >> Click.href
+
+
+
 -- EXTERNAL
 
 

@@ -1,4 +1,4 @@
-module UnisonLocal.Api exposing (codebaseApiEndpointToEndpoint, namespace)
+module UnisonLocal.Api exposing (codebaseApiEndpointToEndpoint, namespace, projects, projectBranches)
 
 import Code.BranchRef as BranchRef
 import Code.CodebaseApi as CodebaseApi
@@ -14,7 +14,7 @@ import Lib.HttpApi exposing (Endpoint(..))
 import Maybe.Extra as MaybeE
 import Regex
 import UnisonLocal.CodeBrowsingContext exposing (CodeBrowsingContext(..))
-import UnisonLocal.ProjectName as ProjectName
+import UnisonLocal.ProjectName as ProjectName exposing (ProjectName)
 import Url.Builder exposing (QueryParameter, int, string)
 
 
@@ -27,6 +27,22 @@ namespace context perspective fqn =
     GET
         { path = baseCodePathFromContext context ++ [ "namespaces", FQN.toString fqn ]
         , queryParams = MaybeE.values queryParams
+        }
+
+
+projects : Endpoint
+projects =
+    GET
+        { path = [ "projects" ]
+        , queryParams = []
+        }
+
+
+projectBranches : ProjectName -> Endpoint
+projectBranches projectName =
+    GET
+        { path = [ "projects", ProjectName.toApiString projectName, "branches" ]
+        , queryParams = []
         }
 
 
