@@ -24,7 +24,7 @@ import Code.FullyQualifiedName as FQN
 import Code.Hash as Hash
 import Code.HashQualified exposing (HashQualified(..))
 import Code.Perspective as Perspective exposing (Perspective, PerspectiveParams(..))
-import Code.Project.ProjectSlug as ProjectSlug
+import Code.ProjectSlug as ProjectSlug
 import Code.UrlParsers as UP exposing (b, branchRef, projectSlug, reference, s, slash, userHandle)
 import Lib.UserHandle as UserHandle
 import List.Nonempty as NEL

@@ -1,6 +1,6 @@
 module UnisonLocal.ProjectName exposing (..)
 
-import Code.Project.ProjectSlug as ProjectSlug exposing (ProjectSlug)
+import Code.ProjectSlug as ProjectSlug exposing (ProjectSlug)
 import Json.Decode as Decode
 import Lib.UserHandle as UserHandle exposing (UserHandle)
 import Lib.Util as Util
