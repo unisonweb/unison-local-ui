@@ -2,8 +2,8 @@ module UnisonLocal.ProjectName exposing (..)
 
 import Code.ProjectSlug as ProjectSlug exposing (ProjectSlug)
 import Json.Decode as Decode
+import Lib.Decode.Helpers as Helpers
 import Lib.UserHandle as UserHandle exposing (UserHandle)
-import Lib.Util as Util
 
 
 type ProjectName
@@ -126,4 +126,4 @@ toApiString (ProjectName handle slug) =
 decode : Decode.Decoder ProjectName
 decode =
     Decode.map fromString Decode.string
-        |> Decode.andThen (Util.decodeFailInvalid "Invalid ProjectName")
+        |> Decode.andThen (Helpers.failInvalid "Invalid ProjectName")
