@@ -111,24 +111,7 @@ module.exports = {
         context: ["/api"],
         target: API_URL,
         pathRewrite: { "^/api": "" },
-        logLevel: "debug",
-        bypass: (req, res, _proxyOptions) => {
-          if (req.url.endsWith("/diff")) {
-            res.send(branchDiffJson);
-          }
-
-          if (req.url.includes("/diff/types")) {
-            res.send(definitionTypeDiffJson);
-          }
-          /*
-          if (req.url.includes("/diff/terms")) {
-            res.send(definitionDiffJson);
-          }
-          if (req.url.includes("/definitions/by-name")) {
-            res.send(definitionsByNameJson);
-          }
-          */
-        },
+        logLevel: "debug"
       },
     ],
   },
