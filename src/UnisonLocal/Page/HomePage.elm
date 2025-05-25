@@ -5,7 +5,7 @@ import Dict exposing (Dict)
 import Html exposing (Html, div, h2, p, text)
 import Json.Decode as Decode
 import Lib.HttpApi as HttpApi
-import Lib.Util as Util
+import Lib.Decode.Helpers as Helpers
 import RemoteData exposing (RemoteData(..), WebData)
 import UI.PageContent as PageContent
 import UI.PageLayout as PageLayout exposing (PageFooter(..))
@@ -126,7 +126,7 @@ decodeBranchList =
     let
         branchSlugDecode =
             Decode.map BranchRef.branchSlugFromString Decode.string
-                |> Decode.andThen (Util.decodeFailInvalid "Invalid BranchName")
+                |> Decode.andThen (Helpers.failInvalid "Invalid BranchName")
     in
     Decode.list <|
         Decode.field "branchName" branchSlugDecode

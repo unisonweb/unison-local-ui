@@ -106,12 +106,13 @@ module.exports = {
     historyApiFallback: {
       disableDotRule: true,
     },
-    proxy: {
-      "/api": {
+    proxy: [
+      {
+        context: ["/api"],
         target: API_URL,
         pathRewrite: { "^/api": "" },
-        logLevel: "debug",
+        logLevel: "debug"
       },
-    },
+    ],
   },
 };
