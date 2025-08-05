@@ -43,6 +43,13 @@ To install a specific sha:
 npm run ui-core-install -- [SOME_UI_CORE_SHA]
 ```
 
+To install with a specific repo & sha (e.g. forked repo):
+
+```bash
+npm run ui-core-install -- [SOME_UI_CORE_SHA] [SOME_UI_CORE_URL]
+# e.g. SOME_UI_CORE_URL=https://github.com/some-user/ui-core
+```
+
 ## Community
 
 [Code of conduct](https://www.unisonweb.org/code-of-conduct/)
